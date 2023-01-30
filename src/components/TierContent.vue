@@ -46,5 +46,6 @@ h1 {
   width: 100%;
   display: flex;
   align-items: start;
+  height: 65px;
 }
 </style>

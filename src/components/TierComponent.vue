@@ -42,6 +42,6 @@ computed: {
   justify-content: center;
   align-items: center;
   font-weight: bold;
-  margin: 4px 8px;
+  margin: 2px 4px;
 }
 </style>
