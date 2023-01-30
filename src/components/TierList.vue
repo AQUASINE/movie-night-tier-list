@@ -3,16 +3,10 @@
     <div class="tiers-letters">
       <TierComponent v-for="tier in tiers" :name="tier.title" :id="tier.id" :key="tier.id" :letter-style="tier.style">
         <template #left>
-          Test Left
+          <TierContent :content="tier.leftContent" class="tier-left"/>
         </template>
         <template #right>
-          <div class="tier-right">
-            <div v-if="tier.rightContent && tier.rightContent.type === 'movie-list'">
-              <div v-for="movie in tier.rightContent.value" :key="movie.name">
-                <img :src="movie.imageUrl" alt="movie image" class="tier-poster" :title="movie.name"/>
-              </div>
-            </div>
-          </div>
+          <TierContent :content="tier.rightContent" class="tier-right"/>
         </template>
       </TierComponent>
     </div>
@@ -21,10 +15,11 @@
 
 <script>
 import TierComponent from "@/components/TierComponent.vue";
+import TierContent from "@/components/TierContent.vue";
 
 export default {
   name: "TierList",
-  components: {TierComponent},
+  components: {TierContent, TierComponent},
   data() {
     return {
       tiers: [
@@ -141,20 +136,11 @@ h1 {
   grid-template-columns: 1fr 0fr 1fr;
 }
 
-.tier-poster {
-  height: 65px;
-  aspect-ratio: 27 / 40;
-}
-
-.tier-right {
-  display: flex;
-  justify-content: left;
-  align-items: center;
-}
-
 #valhalla-tier h1 {
   font-size: 20px;
   white-space: nowrap;
   overflow: hidden;
 }
+
+
 </style>
