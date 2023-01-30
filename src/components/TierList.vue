@@ -1,21 +1,18 @@
 <template>
   <div class="tier-list">
     <div class="tiers-letters">
-      <div class="tier" id="valhalla-tier">
-        <div class="tier-left">
-          <h1>The Movie Night Tier List</h1>
-        </div>
-        <div class="tier-letter" id="valhalla">Valhalla</div>
-        <img class="tier-poster"
-             src="https://a.ltrbxd.com/resized/film-poster/2/4/2/2/8/5/242285-puss-in-boots-the-last-wish-0-500-0-750-crop.jpg?v=9e9109c5cd"
-             alt="puss in boots"/>
-      </div>
       <TierComponent v-for="tier in tiers" :name="tier.title" :id="tier.id" :key="tier.id" :letter-style="tier.style">
         <template #left>
           Test Left
         </template>
         <template #right>
-          Test Right
+          <div class="tier-right">
+            <div v-if="tier.rightContent && tier.rightContent.type === 'movie-list'">
+              <div v-for="movie in tier.rightContent.value" :key="movie.name">
+                <img :src="movie.imageUrl" alt="movie image" class="tier-poster" :title="movie.name"/>
+              </div>
+            </div>
+          </div>
         </template>
       </TierComponent>
     </div>
@@ -41,6 +38,15 @@ export default {
           leftContent: {
             type: "html",
             value: "<div>test</div>"
+          },
+          rightContent: {
+            type: "movie-list",
+            value: [
+              {
+                name: "Puss in Boots 2: The Last Wish",
+                imageUrl: "https://a.ltrbxd.com/resized/film-poster/2/4/2/2/8/5/242285-puss-in-boots-the-last-wish-0-500-0-750-crop.jpg?v=9e9109c5cd"
+              }
+            ]
           }
         },
         {
