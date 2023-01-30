@@ -1,6 +1,6 @@
 <template>
   <div class="tier-list">
-    <h1>Tier List</h1>
+    <h1>The Movie Night Tier List</h1>
     <div class="tiers-letters">
       <div class="tier-letter" id="valhalla">Valhalla</div>
       <div class="tier-letter" id="s">S</div>
@@ -11,6 +11,7 @@
       <div class="tier-letter" id="e">E</div>
       <div class="tier-letter" id="f">F</div>
       <div class="tier-letter" id="shadowrealm">Shadow Realm</div>
+      <div class="tier-letter" id="chips">CHIPS</div>
     </div>
   </div>
 </template>
@@ -23,8 +24,20 @@ export default {
 
 <style scoped>
 .tier-letter {
-  width: 60px;
-  height: 60px;
+  width: 65px;
+  aspect-ratio: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  margin: 4px;
+
+}
+
+h1 {
+  font-family: "Comic Sans MS", sans-serif;
+  font-size: 40px;
+  color: #ffffff;
 }
 
 #s {
@@ -62,5 +75,9 @@ export default {
 
 #chips {
   background-color: white;
+}
+
+#valhalla {
+  background-color: #00ffa6;
 }
 </style>
