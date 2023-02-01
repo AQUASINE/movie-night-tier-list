@@ -3,7 +3,11 @@
     <div class="tier-left">
       <slot name="left"></slot>
     </div>
-    <div class="tier-letter" :style="{'background-color': backgroundColor, 'background-image': backgroundImage}">{{ name }}</div>
+    <div class="tier-letter"
+         :style="{'background-color': backgroundColor, 'background-image': backgroundImage, color: textColor }">{{
+        name
+      }}
+    </div>
     <div class="tier-right">
       <slot name="right"></slot>
     </div>
@@ -23,19 +27,25 @@ export default {
       required: false,
     },
   },
-computed: {
+  computed: {
     backgroundColor() {
       if (this.letterStyle && this.letterStyle["type"] === "color" && this.letterStyle["background-color"]) {
         return this.letterStyle["background-color"];
       }
       return "black";
     },
-  backgroundImage() {
+    backgroundImage() {
       if (this.letterStyle && this.letterStyle["type"] === "image" && this.letterStyle["imageUrl"]) {
         return `url(${this.letterStyle["imageUrl"]})`;
       }
       return "none";
     },
+    textColor() {
+      if (this.letterStyle && this.letterStyle['textColor']) {
+        return this.letterStyle['textColor'];
+      }
+      return 'black';
+    }
   },
 }
 </script>
