@@ -58,6 +58,10 @@ export default {
                 name: "Puss in Boots 2: The Last Wish",
                 imageUrl: "https://a.ltrbxd.com/resized/film-poster/2/4/2/2/8/5/242285-puss-in-boots-the-last-wish-0-500-0-750-crop.jpg?v=9e9109c5cd"
               },
+              {
+                name: "Superbad",
+                imageUrl: "https://a.ltrbxd.com/resized/film-poster/4/7/7/7/6/47776-superbad-0-500-0-750-crop.jpg?v=b43686efcb"
+              }
             ]
           }
         },
