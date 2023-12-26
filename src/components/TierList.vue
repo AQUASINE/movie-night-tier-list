@@ -1,5 +1,5 @@
 <template>
-  <div class="tier-list">
+  <div class="tier-list" ref="tierList">
     <div class="tiers-letters">
       <TierComponent v-for="tier in tiers" :name="tier.title" :id="tier.id" :key="tier.id" :letter-style="tier.style">
         <template #left>
