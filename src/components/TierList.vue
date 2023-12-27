@@ -32,6 +32,12 @@ export default {
         e.preventDefault();
       }
 
+      // if tilde is pressed, reset zoom and pan
+      if (e.code === "Backquote") {
+        this.zoom = 1.0;
+        this.panAmountX = 0;
+        this.panAmountY = 0;
+      }
     });
 
     // when the spacebar is released, stop panning
@@ -64,7 +70,7 @@ export default {
           this.zoom = 3;
         }
         e.preventDefault();
-      } if (e.shiftKey) {
+      } else if (e.shiftKey) {
         this.panAmountX -= e.deltaY / this.zoom * 0.33;
       }
       else {
@@ -150,7 +156,11 @@ export default {
           style: {
             type: "color",
             "background-color": "#ff7f7f"
-          }
+          },
+          leftContent: {
+            type: "movie-list",
+
+          },
         },
         {
           id: "a",
