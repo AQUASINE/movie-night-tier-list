@@ -1,5 +1,10 @@
 <template>
-  <TierList/>
+  <div class="flex w-full">
+  <TierList class="flex-1"/>
+  <div class="w-1/4 bg2 pa-4">
+    <h1 class="font-bold text-2xl">Add Entry</h1>
+  </div>
+  </div>
 </template>
 
 <script>
@@ -16,11 +21,8 @@ export default {
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
 }
 
 body {

@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --bg1: #000000;
+    --bg2: #222223;
+    --bg3: #38383c;
+    --bg4: #4f4f56;
+}
+
 body {
     margin: 0;
+    font-family: 'Outfit', sans-serif;
+    color: #aaa;
+}
+
+.bg1 {
+    background-color: var(--bg1);
+}
+
+.bg2 {
+    background-color: var(--bg2);
+}
+
+.bg3 {
+    background-color: var(--bg3);
+}
+
+.bg4 {
+    background-color: var(--bg4);
 }
