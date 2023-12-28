@@ -30,3 +30,8 @@ body {
 .bg4 {
     background-color: var(--bg4);
 }
+
+.border-bg4 {
+   border: 1px solid var(--bg4);
+    border-radius: 4px;
+}

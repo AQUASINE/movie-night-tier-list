@@ -19,6 +19,7 @@
 <script>
 import TierComponent from "@/components/TierComponent.vue";
 import TierContent from "@/components/TierContent.vue";
+import {mapState} from "vuex";
 
 export default {
   name: "TierList",
@@ -26,7 +27,7 @@ export default {
   mounted() {
     // when the spacebar is pressed, allow panning
     window.addEventListener("keydown", (e) => {
-      if (e.code === "Space") {
+      if (e.code === "Space" && this.isMouseInTierList) {
         this.isPanningAllowed = true;
         this.$refs.tierList.style.cursor = "grab";
         e.preventDefault();
@@ -57,7 +58,15 @@ export default {
       }
     });
 
-    window.addEventListener("mouseup", (e) => {
+    this.$refs.tierList.addEventListener("mouseleave", () => {
+      this.isMouseInTierList = false;
+    });
+
+    this.$refs.tierList.addEventListener("mouseenter", () => {
+      this.isMouseInTierList = true;
+    });
+
+    window.addEventListener("mouseup", () => {
       this.isPanning = false;
     });
 
@@ -89,8 +98,8 @@ export default {
     });
 
   },
-  methods: {
-  
+  computed: {
+    ...mapState(["tiers"]),
   },
   watch: {
     zoom() {
@@ -109,25 +118,6 @@ export default {
       panAmountY: 0,
       isPanAllowed: false,
       isPanning: false,
-      tiers: [
-        {
-          id: "valhalla",
-          title: "Valhalla",
-          style: {
-            type: "image",
-            imageUrl: "https://images.pexels.com/photos/53594/blue-clouds-day-fluffy-53594.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-            textColor: "white",
-          },
-          leftContent: {
-            type: "html",
-            value: "<div>test</div>"
-          },
-          rightContent: {
-            type: "movie-list",
-          }
-        },
-
-      ]
     }
   }
 }

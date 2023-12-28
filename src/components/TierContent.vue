@@ -45,7 +45,6 @@ h1 {
   background-color: #1a1a1a;
   width: 100%;
   display: flex;
-  align-items: start;
   height: 65px;
 }
 </style>
