@@ -57,7 +57,9 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  text-align: center;
   font-weight: bold;
   margin: 2px 4px;
+  background-size: cover;
 }
 </style>

@@ -4,12 +4,13 @@
       <v-slider v-model="zoom" direction="vertical" min="0.25" max="3" step="0.01" append-icon="mdi-magnify-plus-outline" prepend-icon="mdi-magnify-minus-outline" class="ma-4"/>
     </div>
     <div class="tiers-letters select-none" :style="{transform: 'scale(' + zoom + ') translateX(' + panAmountX + 'px) translateY(' + panAmountY + 'px)'}">
+      <div class="header__movie-night">The Movie Night Tier List</div>
       <TierComponent v-for="tier in tiers" :name="tier.title" :id="tier.id" :key="tier.id" :letter-style="tier.style" class="flex justify-center align-center">
         <template #left>
-          <TierContent :content="tier.leftContent" class="tier-left"/>
+          <TierContent :content="getContent(leftContent, tier)" class="tier-left" :class="{hideTierBg: tier.id === 'valhalla'}"/>
         </template>
         <template #right>
-          <TierContent :content="tier.rightContent" class="tier-right flex-1"/>
+          <TierContent :content="getContent(rightContent, tier)" class="tier-right flex-1"/>
         </template>
       </TierComponent>
     </div>
@@ -37,7 +38,7 @@ export default {
       if (e.code === "Backquote") {
         this.zoom = 1.0;
         this.panAmountX = 0;
-        this.panAmountY = 0;
+        this.panAmountY = 100;
       }
     });
 
@@ -50,6 +51,7 @@ export default {
     });
 
     this.$refs.tierList.addEventListener("mousedown", (e) => {
+      this.isMouseInTierList = true;
       if (e.button === 1) {
         this.isPanning = true;
       }
@@ -60,10 +62,6 @@ export default {
 
     this.$refs.tierList.addEventListener("mouseleave", () => {
       this.isMouseInTierList = false;
-    });
-
-    this.$refs.tierList.addEventListener("mouseenter", () => {
-      this.isMouseInTierList = true;
     });
 
     window.addEventListener("mouseup", () => {
@@ -99,7 +97,7 @@ export default {
 
   },
   computed: {
-    ...mapState(["tiers"]),
+    ...mapState(["tiers", 'leftContent', 'rightContent']),
   },
   watch: {
     zoom() {
@@ -115,9 +113,20 @@ export default {
     return {
       zoom: 1.0,
       panAmountX: 0,
-      panAmountY: 0,
+      panAmountY: 100,
       isPanAllowed: false,
       isPanning: false,
+    }
+  },
+  methods: {
+    getContent(content, tier) {
+      if (!content || content[tier.id] === undefined) {
+        console.log("no content");
+      }
+      return {
+        type: "movie-list",
+        value: content[tier.id]
+      }
     }
   }
 }
@@ -144,4 +153,24 @@ h1 {
 }
 
 
+.tier-left {
+  width: 1400px;
+}
+
+.tier-right {
+  width: 2200px;
+}
+
+.header__movie-night {
+  font-family: "Comic Sans MS", sans-serif;
+  font-size: 40px;
+  color: #ffffff;
+  text-align: center;
+  position: relative;
+  margin-bottom: -60px;
+  left: 0;
+  top: 0;
+  white-space: nowrap;
+  transform: translateX(-1000px);
+}
 </style>

@@ -27,12 +27,18 @@ h1 {
 .tier-poster {
   height: 65px;
   aspect-ratio: 27 / 40;
+  min-width: 45px;
 }
 
 .tier-right {
   display: flex;
   justify-content: left;
   align-items: center;
+}
+
+.tier-left .movie-list {
+  display: flex;
+  flex-direction: row-reverse;
 }
 
 #valhalla-tier h1 {
@@ -46,5 +52,10 @@ h1 {
   width: 100%;
   display: flex;
   height: 65px;
+  overflow-x: visible;
+}
+
+.hideTierBg .movie-list {
+  background-color: transparent !important;
 }
 </style>

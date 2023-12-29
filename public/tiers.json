@@ -65,11 +65,13 @@
     }
   },
   {
-    "id": "shadowrealm",
+    "id": "shadowRealm",
     "title": "Shadow Realm",
     "style": {
-      "type": "color",
-      "background-color": "#400d59"
+      "type": "image",
+      "imageUrl": "/The_shadow_realm.webp",
+      "background-color": "#400d59",
+      "textColor": "white"
     }
   },
   {
