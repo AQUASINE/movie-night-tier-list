@@ -34,8 +34,8 @@
               <select name="tier-select" class="tier-select" v-model="selectedTier">
                 <option :value="tier" v-for="tier in tierValues" :key="tier">{{ getTierName(tier) }}</option>
               </select>
-
             </div>
+
           </div>
         </div>
       </div>

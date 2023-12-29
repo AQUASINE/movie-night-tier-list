@@ -26,6 +26,7 @@ export const store = createStore({
             "shadowRealm": [],
             "chips": []
         },
+        dock: []
     },
     modules: {
         letterboxd

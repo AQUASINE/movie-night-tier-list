@@ -14,6 +14,7 @@
         </template>
       </TierComponent>
     </div>
+    <TierContent :content="dock"/>
   </div>
 </template>
 
@@ -122,6 +123,7 @@ export default {
     getContent(content, tier) {
       if (!content || content[tier.id] === undefined) {
         console.log("no content");
+        return null;
       }
       return {
         type: "movie-list",
