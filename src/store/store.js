@@ -35,8 +35,18 @@ export const store = createStore({
         setTiers(state, tiers) {
             state.tiers = tiers;
         },
-        addEntry(state, {film}) {
-            state.dock.push(film);
+        addEntry(state, {film, tier, isLeft}) {
+            if (tier === '') {
+                state.dock.unshift(film);
+                return;
+            }
+
+            if (isLeft) {
+                state.leftContent[tier].unshift(film);
+            } else {
+                state.rightContent[tier].unshift(film);
+            }
+
         },
         setTierContent(state, {tierId, tierSide, content}) {
             if (tierSide === "left") {
@@ -74,6 +84,13 @@ export const store = createStore({
 
             if (sourceTierId === targetTierId && sourceTierSide === targetTierSide) {
                 console.log("Source and target are the same, no move needed");
+                if (sourceTierSide === "dock") {
+                    console.log(this.state.dock);
+                } else if (sourceTierSide === "left") {
+                    console.log(this.state.leftContent[sourceTierId]);
+                } else if (sourceTierSide === "right") {
+                    console.log(this.state.rightContent[sourceTierId]);
+                }
                 return;
             }
 

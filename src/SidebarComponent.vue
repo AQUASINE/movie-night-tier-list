@@ -29,16 +29,19 @@
                       class="mr-2 mb-1"></v-icon>
               So Bad It's Good
             </div>
-            <div class="mt-3 mb-1">
+            <div class="mt-3 mb-1 flex justify-space-between align-center">
+              <div class="mt-2">
               <label for="tier-select">Select a Tier: </label>
               <select name="tier-select" class="tier-select" v-model="selectedTier">
                 <option :value="tier" v-for="tier in tierValues" :key="tier">{{ getTierName(tier) }}</option>
               </select>
+              </div>
+              <button class="w-50% border-bg4 pt-1 pb-1 pl-4 pr-4 mt-2" @click="resetTier">Reset Tier</button>
             </div>
           </div>
         </div>
       </div>
-      <button class="w-full border-bg4 pa-3 mt-2" @click="addEntry">Add to Dock</button>
+      <button class="w-full addbutton pa-3 mt-2" @click="addEntry">Add to {{ selectedTierName }}</button>
     </div>
   </div>
 </template>
@@ -50,6 +53,11 @@ export default {
   computed: {
     ...mapState('letterboxd', ['searchResults']),
     ...mapState(['tiers', 'leftContent', 'rightContent']),
+    selectedTierName() {
+      if (!this.selectedTier) return "Dock";
+      const side = this.isTierLeft ? 'Left' : 'Right';
+      return `${side} ${this.tiers.find((t) => t.id === this.selectedTier)?.title}`;
+    },
     formattedSearchResults() {
       if (!this.searchResults) return;
       return this.searchResults.map((result) => {
@@ -81,6 +89,9 @@ export default {
     }
   },
   methods: {
+    resetTier() {
+      this.selectedTier = '';
+    },
     searchLetterboxd() {
       const query = this.searchText;
       clearTimeout(this.searchDebounce);
@@ -158,8 +169,15 @@ body {
   color: #ffffff;
   border: 1px solid var(--bg4);
   padding: 4px;
-  width: 120px;
+  width: 140px;
   border-radius: 4px;
   margin-left: 6px;
+}
+
+.addbutton {
+  background-color: #ffffff;
+  color: var(--bg2);
+  border: 1px solid #ffffff;
+  border-radius: 4px;
 }
 </style>

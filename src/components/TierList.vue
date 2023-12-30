@@ -185,16 +185,16 @@ h1 {
 
 
 .tier-left {
-  width: 1400px;
+  width: 1300px;
 }
 
 .tier-right {
-  width: 2200px;
+  width: 3200px;
 }
 
 .header__movie-night {
   font-family: "Comic Sans MS", sans-serif;
-  font-size: 40px;
+  font-size: 48px;
   color: #ffffff;
   text-align: center;
   position: relative;
@@ -202,7 +202,7 @@ h1 {
   left: 0;
   top: 0;
   white-space: nowrap;
-  transform: translateX(-1000px);
+  transform: translateX(-1600px);
 }
 
 .dock {
