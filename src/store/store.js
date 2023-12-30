@@ -35,13 +35,16 @@ export const store = createStore({
         setTiers(state, tiers) {
             state.tiers = tiers;
         },
-        addEntry(state, {film, tier, isLeft}) {
-            if (isLeft && state.leftContent[tier]) {
-                state.leftContent[tier].push(film);
-            } else if (state.rightContent[tier]) {
-                state.rightContent[tier].push(film);
-            } else {
-                console.error("Could not add entry", film, tier, isLeft);
+        addEntry(state, {film}) {
+            state.dock.push(film);
+        },
+        setTierContent(state, {tierId, tierSide, content}) {
+            if (tierSide === "left") {
+                state.leftContent[tierId] = content;
+            } else if (tierSide === "right") {
+                state.rightContent[tierId] = content;
+            } else if (tierSide === "dock") {
+                state.dock = content;
             }
         }
     },
@@ -60,6 +63,46 @@ export const store = createStore({
             const {film, tier, isLeft} = payload;
             console.log("Adding entry", film, tier, isLeft)
             commit('addEntry', {film, tier, isLeft})
+        },
+        async moveEntry({commit}, payload) {
+            // payload contains movie, sourceTierId, sourceTierSide, targetTierId, targetTierSide
+            // sourceTierSide can be dock, left, right
+
+            // find movie in source tier and remove
+            const {sourceTierId, sourceTierSide, movie} = payload;
+            const {targetTierId, targetTierSide} = payload;
+
+            if (sourceTierId === targetTierId && sourceTierSide === targetTierSide) {
+                console.log("Source and target are the same, no move needed");
+                return;
+            }
+
+            let sourceTier;
+            if (sourceTierSide === "dock") {
+                sourceTier = this.state.dock;
+            } else if (sourceTierSide === "left") {
+                sourceTier = this.state.leftContent[sourceTierId];
+            } else if (sourceTierSide === "right") {
+                sourceTier = this.state.rightContent[sourceTierId];
+            }
+
+            const movieIndex = sourceTier.findIndex(m => m.id === movie.id);
+            sourceTier.splice(movieIndex, 1);
+            commit('setTierContent', {tierId: sourceTierId, tierSide: sourceTierSide, content: sourceTier});
+
+            // add movie to target tier
+            let targetTier;
+
+            if (targetTierSide === "left") {
+                targetTier = this.state.leftContent[targetTierId];
+            } else if (targetTierSide === "right") {
+                targetTier = this.state.rightContent[targetTierId];
+            } else if (targetTierSide === "dock") {
+                targetTier = this.state.dock;
+            }
+            // put at top of tier for now
+            targetTier.unshift(movie);
+            commit('setTierContent', {tierId: targetTierId, tierSide: targetTierSide, content: targetTier});
         }
     }
 });

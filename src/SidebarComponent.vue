@@ -15,7 +15,7 @@
           </div>
           <div class="mt-4">
             <input type="text" placeholder="Title" class="w-full border-bg4 pa-2 mt-2" v-model="selectedInfo.name"/>
-            <div class="opacity-30">Letterboxd ID: {{ selectedInfo.id }}</div>
+            <div class="opacity-30">Letterboxd ID: {{ selectedInfo.letterboxdId }}</div>
             <div class="flex mt-4">
               <img :src="selectedInfo.imageUrl" class="uploaded-image mr-3"/>
               <div>
@@ -35,11 +35,10 @@
                 <option :value="tier" v-for="tier in tierValues" :key="tier">{{ getTierName(tier) }}</option>
               </select>
             </div>
-
           </div>
         </div>
       </div>
-      <button class="w-full border-bg4 pa-3 mt-2" @click="addEntry">Add</button>
+      <button class="w-full border-bg4 pa-3 mt-2" @click="addEntry">Add to Dock</button>
     </div>
   </div>
 </template>
@@ -58,7 +57,7 @@ export default {
         return {
           name: film.name,
           imageUrl: film.poster?.sizes[0].url,
-          id: film.id,
+          letterboxdId: film.id,
         }
       })
     },
@@ -76,6 +75,7 @@ export default {
       isTierLeft: false,
       selectedInfo: {
         name: '',
+        letterboxdId: '',
         id: '',
       },
     }
@@ -95,9 +95,12 @@ export default {
       this.isTierLeft = !this.isTierLeft;
     },
     addEntry() {
-      if (!this.selectedTier) return;
-
       const selectedInfo = {...this.selectedInfo};
+
+      if (!selectedInfo.id) {
+        selectedInfo.id = crypto.randomUUID();
+      }
+
       const payload = {
         film: selectedInfo,
         tier: this.selectedTier,
