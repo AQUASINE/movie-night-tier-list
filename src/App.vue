@@ -1,7 +1,7 @@
 <template>
   <div class="flex w-full">
-    <TierList class="flex-1"/>
-    <SidebarComponent/>
+    <TierList class="flex-1" ref="tierList"/>
+    <SidebarComponent @screenshot="screenshot"/>
   </div>
 </template>
 
@@ -15,6 +15,11 @@ export default {
     SidebarComponent,
     TierList,
   },
+  methods: {
+    screenshot() {
+      this.$refs.tierList.screenshot();
+    }
+  }
 
 }
 </script>

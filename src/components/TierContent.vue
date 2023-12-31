@@ -1,14 +1,16 @@
 <template>
-  <div>
-    <draggable v-if="content" class="movie-list" :id="id">
+  <div class="container__movie-list">
+    <draggable v-if="content" class="movie-list" :id="id" @change="onOrderChange" :list="content">
       <div v-for="movie in content" :key="movie.name" @dragstart="handleDragStart(movie, id)">
-        <img :src="movie.imageUrl" alt="movie image" class="tier-poster" :title="movie.name"/>
+        <img :src="proxyImage(movie.imageUrl)" alt="movie image" class="tier-poster" :title="movie.name"/>
       </div>
     </draggable>
   </div>
 </template>
 <script>
 import { VueDraggableNext } from "vue-draggable-next";
+
+const PROXY_URL = "http://localhost:3000/image_proxy?url=";
 
 export default {
   name: 'TierContent',
@@ -28,23 +30,17 @@ export default {
     draggable: VueDraggableNext,
   },
   methods: {
-    handleDragEnd(event) {
-      const id = event.originalEvent?.target?.id
-      if (id === 'dock') {
-        return;
-      }
-
-      console.log(event);
-
-      const tierId = id.split('-')[1];
-      const tierSide = id.split('-')[0];
-    },
-    movieNameToId(name) {
-      return name.replace(/[^a-zA-Z0-9]/g, '');
+    onOrderChange(evt) {
+      console.log('onOrderChange', evt);
+      this.$store.dispatch('changeTierOrder', {tierId: this.id, tierSide: this.side, event: evt});
     },
     handleDragStart(movie, tierId) {
       console.log('dragstart TierContent')
       this.$emit('dragstart', {movie, tierId, tierSide: this.side});
+    },
+    proxyImage(url) {
+      if (!url) return;
+      return `${PROXY_URL}${encodeURIComponent(url)}`;
     }
   }
 }
@@ -78,6 +74,7 @@ h1 {
 .tier-left .movie-list {
   display: flex;
   flex-direction: row-reverse;
+  width: 100%;
 }
 
 #valhalla-tier h1 {
@@ -96,5 +93,14 @@ h1 {
 
 .hideTierBg .movie-list {
   background-color: transparent !important;
+}
+
+.tier-left .container__movie-list {
+  padding-left: 10px;
+}
+
+.container__movie-list {
+  width: 100%;
+  flex: 1;
 }
 </style>

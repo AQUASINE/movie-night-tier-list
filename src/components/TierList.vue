@@ -4,22 +4,33 @@
       <v-slider v-model="zoom" direction="vertical" min="0.25" max="3" step="0.01"
                 append-icon="mdi-magnify-plus-outline" prepend-icon="mdi-magnify-minus-outline" class="ma-4"/>
     </div>
-    <div class="tiers-letters select-none"
+    <div class="tiers-letters select-none" ref="tiersLetters"
          :style="{transform: 'scale(' + zoom + ') translateX(' + panAmountX + 'px) translateY(' + panAmountY + 'px)'}">
       <div class="header__movie-night">The Movie Night Tier List</div>
+      <div class="info__movie-night">
+        <div class="item__info-movie-night">
+          <span class="bigger-info">Right Side:</span> Regular Enjoyment
+        </div>
+        <div class="item__info-movie-night">
+          <span class="bigger-info">Left Side:</span> So Bad It's Good
+        </div>
+      </div>
       <TierComponent v-for="tier in tiers" :name="tier.title" :id="tier.id" :key="tier.id" :letter-style="tier.style"
                      class="flex justify-center align-center">
         <template #left>
           <TierContent :content="getContent(leftContent, tier)" class="tier-left" :id="`${tier.id}`" side="left"
-                       :class="{hideTierBg: tier.id === 'valhalla'}" @dragstart="handleDragStart" @drop="handleDrop('left', tier.id)"/>
+                       :class="{hideTierBg: tier.id === 'valhalla'}" @dragstart="handleDragStart"
+                       @drop="handleDrop('left', tier.id)"/>
         </template>
         <template #right>
-          <TierContent :content="getContent(rightContent, tier)" :id="`${tier.id}`" class="tier-right flex-1" side="right"
+          <TierContent :content="getContent(rightContent, tier)" :id="`${tier.id}`" class="tier-right flex-1"
+                       side="right"
                        @dragstart="handleDragStart" @drop="handleDrop('right', tier.id)"/>
         </template>
       </TierComponent>
     </div>
-    <TierContent :content="dock" id="dock" class="dock" @dragstart="handleDragStart" @drop="handleDrop('dock', 'dock')" side="dock"/>
+    <TierContent :content="dock" id="dock" class="dock" @dragstart="handleDragStart" @drop="handleDrop('dock', 'dock')"
+                 side="dock"/>
   </div>
 </template>
 
@@ -27,6 +38,7 @@
 import TierComponent from "@/components/TierComponent.vue";
 import TierContent from "@/components/TierContent.vue";
 import {mapState} from "vuex";
+import html2canvas from "html2canvas";
 
 export default {
   name: "TierList",
@@ -35,6 +47,7 @@ export default {
     ...mapState(["tiers", 'leftContent', 'rightContent', 'dock']),
   },
   mounted() {
+    this.resetZoom();
     // when the spacebar is pressed, allow panning
     window.addEventListener("keydown", (e) => {
       if (e.code === "Space" && this.isMouseInTierList) {
@@ -45,9 +58,7 @@ export default {
 
       // if tilde is pressed, reset zoom and pan
       if (e.code === "Backquote") {
-        this.zoom = 1.0;
-        this.panAmountX = 0;
-        this.panAmountY = 100;
+        this.resetZoom();
       }
     });
 
@@ -159,6 +170,53 @@ export default {
       this.sourceTierId = tierId;
       this.sourceTierSide = tierSide;
     },
+    resetZoom() {
+      this.zoom = 1.0;
+      this.panAmountX = 1000;
+      this.panAmountY = 110;
+    },
+    screenshot() {
+      console.log(this.$refs.tiersLetters.scrollWidth, this.$refs.tiersLetters.scrollHeight);
+      this.zoom = 1.0;
+      this.panAmountX = 1000;
+      this.panAmountY = 110;
+      html2canvas(
+          this.$refs.tiersLetters,
+          {
+            allowTaint: true,
+            proxy: "https://a.ltrbxd.com/",
+            width: 5400,
+            height: 706,
+            useCORS: true,
+            windowWidth: 5800,
+            windowHeight: 1190,
+            scale: 2,
+            backgroundColor: '#000000',
+          }
+      ).then((canvas) => {
+        const DEBUG_EDGES = false;
+
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#000000";
+
+        if (DEBUG_EDGES) {
+          ctx.fillStyle = "#0000ff";
+        }
+        ctx.fillRect(6390, 0, 100, 1000)
+
+        if (DEBUG_EDGES) {
+          ctx.fillStyle = "#ff0000";
+        }
+        ctx.fillRect(1000, 0, 10, 1000)
+
+        const data = canvas.toDataURL("image/png");
+        const a = document.createElement("a");
+        a.href = data;
+        a.download = "tierlist.png";
+        a.click();
+        this.resetZoom();
+      });
+    }
   }
 }
 </script>
@@ -185,11 +243,11 @@ h1 {
 
 
 .tier-left {
-  width: 1300px;
+  min-width: 1300px;
 }
 
 .tier-right {
-  width: 3200px;
+  width: 3700px;
 }
 
 .header__movie-night {
@@ -202,7 +260,7 @@ h1 {
   left: 0;
   top: 0;
   white-space: nowrap;
-  transform: translateX(-1600px);
+  transform: translateX(-1850px);
 }
 
 .dock {
@@ -219,5 +277,26 @@ h1 {
   border-bottom: none;
   justify-content: center;
   align-items: center;
+}
+
+.info__movie-night {
+  font-family: "Comic Sans MS", sans-serif;
+  font-size: 32px;
+  color: #ffffff;
+  text-align: center;
+  position: relative;
+  left: 0;
+  top: 540px;
+  margin-bottom: -144px;
+  transform: translateX(-1850px);
+}
+
+.item__info-movie-night {
+  white-space: nowrap;
+  margin-bottom: -5px;
+}
+
+.bigger-info {
+  font-size: 48px;
 }
 </style>

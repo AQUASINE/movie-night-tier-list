@@ -1,4 +1,9 @@
 @tailwind base;
+@layer base {
+    img {
+        @apply inline-block;
+    }
+}
 @tailwind components;
 @tailwind utilities;
 
@@ -7,6 +12,7 @@
     --bg2: #222223;
     --bg3: #38383c;
     --bg4: #4f4f56;
+    --color-warning: #b94768;
 }
 
 body {

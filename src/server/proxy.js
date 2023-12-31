@@ -2,6 +2,7 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+const https = require('https');
 
 const app = express();
 const port = 3000; // You can choose any available port
@@ -20,6 +21,29 @@ app.get('/api/search', async (req, res) => {
             }
         );
         res.json(response.data);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.get('/image_proxy', async (req, res) => {
+    console.log('GET /image_proxy')
+    console.log(req.query)
+    if (!req.query.url) {
+        res.status(400).send('Bad Request');
+        return;
+    }
+    try {
+        const response = await axios.get(
+            req.query.url,
+            {
+                responseType: 'arraybuffer',
+                httpsAgent: new https.Agent({rejectUnauthorized: false})
+            }
+        );
+        res.set('Content-Type', 'image/jpeg');
+        res.send(response.data);
     } catch (error) {
         console.error(error);
         res.status(500).send('Internal Server Error');

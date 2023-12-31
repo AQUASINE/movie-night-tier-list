@@ -56,15 +56,32 @@ export const store = createStore({
             } else if (tierSide === "dock") {
                 state.dock = content;
             }
+        },
+        setTierList(state, {left, right, dock}) {
+            state.leftContent = left;
+            state.rightContent = right;
+            state.dock = dock;
+        },
+        changeTierOrder(state, {tierId, tierSide, event}) {
+            const {oldIndex, newIndex} = event;
+            let tier;
+            if (tierSide === "left") {
+                tier = state.leftContent[tierId];
+            } else if (tierSide === "right") {
+                tier = state.rightContent[tierId];
+            } else if (tierSide === "dock") {
+                tier = state.dock;
+            }
+            tier.splice(newIndex, 0, tier.splice(oldIndex, 1)[0]);
         }
     },
     actions: {
         async loadTiersFromFile({commit}) {
             try {
-            const response = await fetch('/tiers.json');
-            const tiers = await response.json();
-            console.log("Loaded tiers.json", tiers);
-            commit('setTiers', tiers);
+                const response = await fetch('/tiers.json');
+                const tiers = await response.json();
+                console.log("Loaded tiers.json", tiers);
+                commit('setTiers', tiers);
             } catch (e) {
                 console.error("Could not load tiers.json", e);
             }
@@ -73,6 +90,8 @@ export const store = createStore({
             const {film, tier, isLeft} = payload;
             console.log("Adding entry", film, tier, isLeft)
             commit('addEntry', {film, tier, isLeft})
+
+            await this.dispatch('saveToLocalStorage');
         },
         async moveEntry({commit}, payload) {
             // payload contains movie, sourceTierId, sourceTierSide, targetTierId, targetTierSide
@@ -120,6 +139,82 @@ export const store = createStore({
             // put at top of tier for now
             targetTier.unshift(movie);
             commit('setTierContent', {tierId: targetTierId, tierSide: targetTierSide, content: targetTier});
+        },
+        async exportTierList() {
+            const exportData = {
+                left: this.state.leftContent,
+                right: this.state.rightContent,
+                dock: this.state.dock,
+                date: new Date()
+            }
+            console.log("Exporting tier list", exportData);
+            return exportData;
+        },
+        async exportTierListToFile() {
+            const exportData = await this.dispatch('exportTierList');
+            const data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData));
+            let now = new Date();
+            // use time zone offset to get local time
+            let datetime = now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate() + '-' + now.getHours() + '-' + now.getMinutes() + '-' + now.getSeconds();
+            const a = document.createElement('a');
+            a.href = 'data:' + data;
+            a.download = `tierlist-${datetime}.json`
+            a.innerHTML = 'download JSON';
+
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        },
+        async saveToLocalStorage() {
+            const exportData = await this.dispatch('exportTierList');
+            localStorage.setItem('tierlist', JSON.stringify(exportData));
+        },
+        async loadFromLocalStorage({commit}) {
+            const data = localStorage.getItem('tierlist');
+            if (data === null) {
+                console.log("No data in localStorage");
+                return;
+            }
+            const parsedData = JSON.parse(data);
+            console.log("Loaded data from localStorage", parsedData);
+
+            commit('setTierList', parsedData);
+        },
+        async importTierList({commit}, data) {
+            console.log("Importing tier list", data);
+            commit('setTierList', JSON.parse(data));
+        },
+        async changeTierOrder({commit}, payload) {
+            commit('changeTierOrder', payload);
+            await this.dispatch('saveToLocalStorage');
+        },
+        async clearTierList({commit}) {
+            commit('setTierList', {
+                left: {
+                    "valhalla": [],
+                    "s": [],
+                    "a": [],
+                    "b": [],
+                    "c": [],
+                    "d": [],
+                    "e": [],
+                    "f": [],
+                },
+                right: {
+                    "valhalla": [],
+                    "s": [],
+                    "a": [],
+                    "b": [],
+                    "c": [],
+                    "d": [],
+                    "e": [],
+                    "f": [],
+                    "shadowRealm": [],
+                    "chips": []
+                },
+                dock: []
+            });
+            await this.dispatch('saveToLocalStorage');
         }
     }
 });

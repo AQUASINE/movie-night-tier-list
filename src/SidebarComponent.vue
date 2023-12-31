@@ -2,6 +2,14 @@
   <div class="sidebar bg2 pa-4">
     <div class="flex flex-column justify-space-between h-100">
       <div>
+        <div class="mb-3 flex justify-space-between">
+          <div>
+        <button @click="importTierList" class="border-bg4 pa-4 pt-1 pb-1 mr-3">Load</button>
+        <button @click="exportTierList" class="border-bg4 pa-4 pt-1 pb-1">Save</button>
+            <button @click="screenshotTierList" class="border-bg4 pa-4 pt-1 pb-1 ml-3 text-s"><v-icon icon="mdi-camera-outline" class="-mt-1"/></button>
+          </div>
+          <button @click="resetTierList" class="reset-button pa-4 pt-1 pb-1">Clear</button>
+        </div>
         <h1 class="font-bold text-2xl">Add Entry</h1>
         <div>
           <input type="text" class="w-full border-bg4 pa-2 mt-2" placeholder="Search Letterboxd" v-model="searchText"
@@ -41,7 +49,7 @@
           </div>
         </div>
       </div>
-      <button class="w-full addbutton pa-3 mt-2" @click="addEntry">Add to {{ selectedTierName }}</button>
+      <button class="w-full addbutton pa-3 mt-2" @click="addEntry" :class="{disable: !formValid}">Add to {{ selectedTierName }}</button>
     </div>
   </div>
 </template>
@@ -50,6 +58,7 @@ import {mapState} from "vuex";
 
 export default {
   name: 'SidebarComponent',
+  emits: ['screenshot'],
   computed: {
     ...mapState('letterboxd', ['searchResults']),
     ...mapState(['tiers', 'leftContent', 'rightContent']),
@@ -57,6 +66,9 @@ export default {
       if (!this.selectedTier) return "Dock";
       const side = this.isTierLeft ? 'Left' : 'Right';
       return `${side} ${this.tiers.find((t) => t.id === this.selectedTier)?.title}`;
+    },
+    formValid() {
+      return this.selectedInfo.name && this.selectedInfo.imageUrl;
     },
     formattedSearchResults() {
       if (!this.searchResults) return;
@@ -121,6 +133,36 @@ export default {
     },
     getTierName(tier) {
       return this.tiers.find((t) => t.id === tier)?.title;
+    },
+    importTierList() {
+      // open file picker
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const content = event.target.result;
+          this.$store.dispatch('importTierList', content);
+        }
+        reader.readAsText(file);
+      }
+      document.body.appendChild(input);
+      input.click();
+      document.body.removeChild(input);
+    },
+    async exportTierList() {
+      await this.$store.dispatch('exportTierListToFile');
+    },
+    resetTierList() {
+      // show prompt
+      const confirmed = confirm('Are you sure you want to clear your tier list?');
+      if (!confirmed) return;
+      this.$store.dispatch('clearTierList');
+    },
+    screenshotTierList() {
+      this.$emit('screenshot');
     }
   }
 }
@@ -178,6 +220,20 @@ body {
   background-color: #ffffff;
   color: var(--bg2);
   border: 1px solid #ffffff;
+  border-radius: 4px;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border 0.2s ease-in-out;
+}
+
+.addbutton.disable {
+  background-color: var(--bg4);
+  color: var(--bg2);
+  border: 1px solid var(--bg4);
+}
+
+.reset-button {
+  background-color: var(--bg2);
+  color: var(--color-warning);
+  border: 1px solid var(--color-warning);
   border-radius: 4px;
 }
 </style>
