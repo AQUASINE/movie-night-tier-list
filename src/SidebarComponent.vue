@@ -55,6 +55,7 @@
 </template>
 <script>
 import {mapState} from "vuex";
+import {v4} from "uuid";
 
 export default {
   name: 'SidebarComponent',
@@ -121,7 +122,7 @@ export default {
       const selectedInfo = {...this.selectedInfo};
 
       if (!selectedInfo.id) {
-        selectedInfo.id = crypto.randomUUID();
+        selectedInfo.id = v4();
       }
 
       const payload = {
