@@ -93,6 +93,23 @@ export const store = createStore({
 
             await this.dispatch('saveToLocalStorage');
         },
+        async removeEntryFromTier({commit}, payload) {
+            const {tierId, tierSide, entry} = payload;
+            let tier;
+            if (tierSide === "left") {
+                tier = this.state.leftContent[tierId];
+            } else if (tierSide === "right") {
+                tier = this.state.rightContent[tierId];
+            } else if (tierSide === "dock") {
+                tier = this.state.dock;
+            }
+
+            const movieIndex = tier.findIndex(m => m.id === entry.id);
+            tier.splice(movieIndex, 1);
+            commit('setTierContent', {tierId, tierSide, content: tier});
+
+            await this.dispatch('saveToLocalStorage');
+        },
         async moveEntry({commit}, payload) {
             // payload contains movie, sourceTierId, sourceTierSide, targetTierId, targetTierSide
             // sourceTierSide can be dock, left, right

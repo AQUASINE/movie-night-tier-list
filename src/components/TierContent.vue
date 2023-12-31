@@ -1,7 +1,7 @@
 <template>
   <div class="container__movie-list">
     <draggable v-if="content" class="movie-list" :id="id" @change="onOrderChange" :list="content">
-      <div v-for="movie in content" :key="movie.name" @dragstart="handleDragStart(movie, id)">
+      <div v-for="movie in content" :key="movie.name" @dragstart="handleDragStart(movie, id)" @click="($event) => handleClick($event, movie)">
         <img :src="proxyImage(movie.imageUrl)" alt="movie image" class="tier-poster" :title="movie.name"/>
       </div>
     </draggable>
@@ -41,6 +41,20 @@ export default {
     proxyImage(url) {
       if (!url) return;
       return `${PROXY_URL}${encodeURIComponent(url)}`;
+    },
+    handleClick(event, movie) {
+      console.log('handleClick', event);
+      // check if control and shift are pressed
+      if (event.ctrlKey && event.shiftKey) {
+        console.log('ctrl + shift + click');
+        const confirm = window.confirm('Are you sure you want to remove this entry from the tier list?');
+        if (!confirm) return;
+        this.$store.dispatch('removeEntryFromTier', {
+          entry: movie,
+          tierId: this.id,
+          tierSide: this.side
+        });
+      }
     }
   }
 }
