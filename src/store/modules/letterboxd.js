@@ -1,3 +1,5 @@
+export const BASE_URL = process.env.NODE_ENV === 'production' ? 'https://app.movienighttierlist.com' : 'http://localhost:3000';
+
 export const letterboxd = {
     namespaced: true,
     state: {
@@ -11,7 +13,7 @@ export const letterboxd = {
     actions: {
         async search({commit}, query) {
             const safeQuery = encodeURIComponent(query);
-            const response = await fetch(`http://localhost:3000/api/search?input=${safeQuery}&include=FilmSearchItem&perPage=20`)
+            const response = await fetch(`${BASE_URL}/api/search?input=${safeQuery}&include=FilmSearchItem&perPage=20`)
             const data = await response.json();
             console.log(data);
             commit('setSearchResults', data.items);

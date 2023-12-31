@@ -50,6 +50,6 @@ app.get('/image_proxy', async (req, res) => {
     }
 });
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`Proxy server listening at http://localhost:${port}`);
 });

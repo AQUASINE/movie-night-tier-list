@@ -11,6 +11,8 @@ import * as directives from 'vuetify/directives'
 import {store} from "@/store/store";
 import {initialize} from "../initialize";
 
+export const BASE_URL = process.env.NODE_ENV === 'production' ? 'https://app.movienighttierlist.com' : 'http://localhost:3000';
+
 const vuetify = createVuetify({
     components,
     directives,
@@ -22,6 +24,7 @@ const vuetify = createVuetify({
         },
     }
 });
+
 
 const app = createApp(App)
 app.use(vuetify)

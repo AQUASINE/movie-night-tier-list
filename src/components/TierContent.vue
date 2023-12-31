@@ -10,7 +10,8 @@
 <script>
 import { VueDraggableNext } from "vue-draggable-next";
 
-const PROXY_URL = "http://localhost:3000/image_proxy?url=";
+const BASE_URL = process.env.NODE_ENV === 'production' ? 'https://app.movienighttierlist.com' : 'http://localhost:3000';
+const PROXY_URL = `${BASE_URL}/image_proxy?url=`;
 
 export default {
   name: 'TierContent',
