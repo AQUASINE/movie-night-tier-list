@@ -185,11 +185,12 @@ body {
   aspect-ratio: 27 / 40;
   border-radius: 4px;
   border: 1px solid var(--bg4);
+  width: 81px;
 }
 
 .sidebar {
   width: 400px;
-  overflow: scroll;
+  overflow: auto;
   max-height: 100vh;
 }
 
