@@ -73,6 +73,11 @@ export const store = createStore({
                 tier = state.dock;
             }
             tier.splice(newIndex, 0, tier.splice(oldIndex, 1)[0]);
+        },
+        reverseLeftContent(state) {
+            for (const tier in state.leftContent) {
+                state.leftContent[tier].reverse();
+            }
         }
     },
     actions: {
@@ -194,6 +199,7 @@ export const store = createStore({
             }
             const parsedData = JSON.parse(data);
             console.log("Loaded data from localStorage", parsedData);
+            localStorage.setItem('tierlist', JSON.stringify(parsedData));
 
             commit('setTierList', parsedData);
         },
@@ -232,6 +238,12 @@ export const store = createStore({
                 dock: []
             });
             await this.dispatch('saveToLocalStorage');
-        }
+        },
     }
 });
+
+function reverseLeftContent() {
+    store.commit('reverseLeftContent');
+}
+
+window.reverseLeftContent = reverseLeftContent;

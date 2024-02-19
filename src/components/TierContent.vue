@@ -2,7 +2,7 @@
   <div class="container__movie-list">
     <draggable v-if="content" class="movie-list" :id="id" @change="onOrderChange" :list="sideSpecificContent">
       <div v-for="movie in content" :key="movie.name" @dragstart="handleDragStart(movie, id)" @click="($event) => handleClick($event, movie)">
-        <img :src="proxyImage(movie.imageUrl)" alt="movie image" class="tier-poster" :title="movie.name"/>
+        <img :src="proxyImage(movie.imageUrl)" :alt="movie.name" class="tier-poster" :title="movie.name"/>
       </div>
     </draggable>
   </div>
@@ -82,6 +82,10 @@ h1 {
   height: 65px;
   aspect-ratio: 27 / 40;
   min-width: 45px;
+  max-width: 45px;
+  font-size: 10px;
+  overflow-wrap: break-word;
+  overflow: hidden;
 }
 
 .tier-right {
