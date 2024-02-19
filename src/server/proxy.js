@@ -5,7 +5,7 @@ const cors = require('cors');
 const https = require('https');
 
 const app = express();
-const port = 3000; // You can choose any available port
+const port = 3008; // You can choose any available port
 
 app.use(cors());
 app.use(express.json());
@@ -28,8 +28,6 @@ app.get('/api/search', async (req, res) => {
 });
 
 app.get('/image_proxy', async (req, res) => {
-    console.log('GET /image_proxy')
-    console.log(req.query)
     if (!req.query.url) {
         res.status(400).send('Bad Request');
         return;

@@ -202,12 +202,12 @@ export default {
         if (DEBUG_EDGES) {
           ctx.fillStyle = "#0000ff";
         }
-        ctx.fillRect(6390, 0, 100, 1000)
+        // ctx.fillRect(6390, 0, 100, 1000)
 
         if (DEBUG_EDGES) {
           ctx.fillStyle = "#ff0000";
         }
-        ctx.fillRect(1000, 0, 10, 1000)
+        // ctx.fillRect(1000, 0, 10, 1000)
 
         const data = canvas.toDataURL("image/png");
         const a = document.createElement("a");

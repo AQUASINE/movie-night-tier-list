@@ -25,7 +25,9 @@
             <input type="text" placeholder="Title" class="w-full border-bg4 pa-2 mt-2" v-model="selectedInfo.name"/>
             <div class="opacity-30">Letterboxd ID: {{ selectedInfo.letterboxdId }}</div>
             <div class="flex mt-4">
-              <img :src="selectedInfo.imageUrl" class="uploaded-image mr-3"/>
+              <div class="uploaded-image-wrap mr-3">
+              <img :src="selectedInfo.imageUrl" class="uploaded-image" alt="" v-if="selectedInfo.imageUrl"/>
+              </div>
               <div>
                 <label for="image-upload" class="cursor-pointer">Enter image url</label>
                 <input type="text" placeholder="Image URL" class="w-full border-bg4 pa-2 mt-2"
@@ -182,10 +184,10 @@ body {
 
 .uploaded-image {
   height: 120px;
-  aspect-ratio: 27 / 40;
-  border-radius: 4px;
-  border: 1px solid var(--bg4);
   width: 81px;
+  min-width: 81px;
+  aspect-ratio: 27 / 40;
+  border-radius: 3px;
 }
 
 .sidebar {
@@ -237,5 +239,14 @@ body {
   color: var(--color-warning);
   border: 1px solid var(--color-warning);
   border-radius: 4px;
+}
+
+.uploaded-image-wrap {
+  border: 1px solid var(--bg4);
+  border-radius: 4px;
+  height: 120px;
+  width: 81px;
+  aspect-ratio: 27 / 40;
+  min-width: 81px;
 }
 </style>

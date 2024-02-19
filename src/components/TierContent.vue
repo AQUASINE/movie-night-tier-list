@@ -1,6 +1,6 @@
 <template>
   <div class="container__movie-list">
-    <draggable v-if="content" class="movie-list" :id="id" @change="onOrderChange" :list="content">
+    <draggable v-if="content" class="movie-list" :id="id" @change="onOrderChange" :list="sideSpecificContent">
       <div v-for="movie in content" :key="movie.name" @dragstart="handleDragStart(movie, id)" @click="($event) => handleClick($event, movie)">
         <img :src="proxyImage(movie.imageUrl)" alt="movie image" class="tier-poster" :title="movie.name"/>
       </div>
@@ -10,7 +10,7 @@
 <script>
 import { VueDraggableNext } from "vue-draggable-next";
 
-const API_URL = process.env.NODE_ENV === 'production' ? 'https://api.movienighttierlist.com' : 'http://localhost:3000';
+const API_URL = process.env.NODE_ENV === 'production' ? 'https://api.movienighttierlist.com' : 'http://localhost:3008';
 const PROXY_URL = `${API_URL}/image_proxy?url=`;
 
 export default {
@@ -57,6 +57,15 @@ export default {
         });
       }
     }
+  },
+  computed: {
+    reversedList() {
+      return this.content.slice().reverse();
+    },
+    sideSpecificContent() {
+      return this.content
+      // return this.side === 'left' ? this.reversedList : this.content;
+    }
   }
 }
 </script>
@@ -88,7 +97,7 @@ h1 {
 
 .tier-left .movie-list {
   display: flex;
-  flex-direction: row-reverse;
+  justify-content: right;
   width: 100%;
 }
 
