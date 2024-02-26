@@ -36,6 +36,41 @@ export const store = createStore({
     modules: {
         letterboxd
     },
+    getters: {
+        findTier: (state) => (tierId, tierSide) => {
+            console.log("Finding tier", tierId, tierSide);
+            switch (tierSide) {
+                case "left":
+                    return state.leftContent[tierId];
+                case "right":
+                    return state.rightContent[tierId];
+                case "dock":
+                    return state.dock;
+            }
+            throw new Error("Invalid tierSide");
+        },
+        findEntryTier: (state) => (entryId) => {
+            for (const tierId in state.leftContent) {
+                const tier = state.leftContent[tierId];
+                const movie = tier.find(m => m.id === entryId);
+                if (movie) {
+                    return {tierId, tierSide: "left"};
+                }
+            }
+            for (const tierId in state.rightContent) {
+                const tier = state.rightContent[tierId];
+                const movie = tier.find(m => m.id === entryId);
+                if (movie) {
+                    return {tierId, tierSide: "right"};
+                }
+            }
+            const movie = state.dock.find(m => m.id === entryId);
+            if (movie) {
+                return {tierId: "dock", tierSide: "dock"};
+            }
+            throw new Error("Could not find entry");
+        }
+    },
     mutations: {
         setTiers(state, tiers) {
             state.tiers = tiers;
@@ -123,14 +158,7 @@ export const store = createStore({
         },
         async removeEntryFromTier({commit}, payload) {
             const {tierId, tierSide, entry} = payload;
-            let tier;
-            if (tierSide === "left") {
-                tier = this.state.leftContent[tierId];
-            } else if (tierSide === "right") {
-                tier = this.state.rightContent[tierId];
-            } else if (tierSide === "dock") {
-                tier = this.state.dock;
-            }
+            let tier = this.getters.findTier(tierId, tierSide);
 
             const movieIndex = tier.findIndex(m => m.id === entry.id);
             tier.splice(movieIndex, 1);
@@ -300,7 +328,19 @@ export const store = createStore({
         async setDeleteWarning({commit}, disableDeleteWarning) {
             commit('setDisableDeleteWarning', disableDeleteWarning);
             await this.dispatch('saveMetadataToLocalStorage');
-        }
+        },
+        async updateEntry({commit}, payload) {
+            const entry = payload;
+
+            const {tierId, tierSide} = this.getters.findEntryTier(entry.id);
+            let tier = this.getters.findTier(tierId, tierSide);
+
+            const movieIndex = tier.findIndex(m => m.id === entry.id);
+            tier[movieIndex] = entry;
+            commit('setTierContent', {tierId, tierSide, content: tier});
+
+            await this.dispatch('saveToLocalStorage');
+        },
     }
 });
 

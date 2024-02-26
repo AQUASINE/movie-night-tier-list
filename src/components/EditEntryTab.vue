@@ -4,7 +4,10 @@ import {mapState} from "vuex";
 export default {
   name: "EditEntryTab",
   computed: {
-    ...mapState(['selectedEntry'])
+    ...mapState(['selectedEntry']),
+    formValid() {
+      return this.entry && this.entry.name && this.entry.imageUrl;
+    }
   },
   methods: {
     saveEntry() {
