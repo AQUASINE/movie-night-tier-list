@@ -6,7 +6,7 @@
     <input type="text" class="w-full border-bg4 pa-2 mt-2" placeholder="Search Letterboxd" v-model="searchText"
            @input="searchLetterboxd"/>
     <div class="divide-y-1 divide-color-white h-52 overflow-scroll border-bg4 mt-4 pl-2">
-      <div v-for="result in formattedSearchResults" :key="result.name" @click="setSelected"
+      <div v-for="result in formattedSearchResults" :key="result.name" @click="setSelected(result)"
            class="flex items-center mt-2 divide-y-1 divide-color-white overflow-hidden whitespace-nowrap text-ellipsis">
         <img :src="result.imageUrl" class="search-image" :title="result.name" height="30"/>
         <span class="ml-2">{{ result.name }}</span>
@@ -34,7 +34,7 @@
         <div class="mt-2">
           <label for="tier-select">Select a Tier: </label>
           <select name="tier-select" class="tier-select" v-model="selectedTier">
-            <option :value="tier" v-for="tier in tierValues" :key="tier">{{ getTierName }}</option>
+            <option :value="tier" v-for="tier in tierValues" :key="tier">{{ getTierName(tier) }}</option>
           </select>
         </div>
         <button class="w-50% border-bg4 pt-1 pb-1 pl-4 pr-4 mt-2" @click="resetTier">Reset Tier</button>
@@ -104,6 +104,7 @@ export default {
       }, 500);
     },
     setSelected(result) {
+      console.log('setSelected', result)
       this.selectedInfo = {...result};
     },
     toggleLeftSide() {

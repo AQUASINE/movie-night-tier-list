@@ -27,8 +27,11 @@ export const store = createStore({
             "chips": []
         },
         dock: [],
+        selectedEntry: null,
+        selectedTab: 'add',
         timeTakenForLastScreenshot: null,
-        showAutotainment: false
+        showAutotainment: false,
+        disableDeleteWarning: false
     },
     modules: {
         letterboxd
@@ -83,6 +86,15 @@ export const store = createStore({
         },
         setTimeTaken(state, timeTaken) {
             state.timeTakenForLastScreenshot = timeTaken;
+        },
+        setSelectedEntry(state, entry) {
+            state.selectedEntry = entry;
+        },
+        setShowAutotainment(state, showAutotainment) {
+            state.showAutotainment = showAutotainment;
+        },
+        setDisableDeleteWarning(state, disableDeleteWarning) {
+            state.disableDeleteWarning = disableDeleteWarning;
         }
     },
     actions: {
@@ -177,6 +189,8 @@ export const store = createStore({
             // put at top of tier for now
             targetTier.unshift(movie);
             commit('setTierContent', {tierId: targetTierId, tierSide: targetTierSide, content: targetTier});
+
+            await this.dispatch('saveToLocalStorage');
         },
         async exportTierList() {
             const exportData = {
@@ -258,7 +272,8 @@ export const store = createStore({
         async saveMetadataToLocalStorage() {
             const metadata = {
                 timeTaken: this.state.timeTaken,
-                showAutotainment: this.state.showAutotainment
+                showAutotainment: this.state.showAutotainment,
+                disableDeleteWarning: this.state.disableDeleteWarning
             }
             localStorage.setItem('metadata', JSON.stringify(metadata));
         },
@@ -270,9 +285,21 @@ export const store = createStore({
             }
             const parsedData = JSON.parse(data);
             console.log("Loaded metadata from localStorage", parsedData);
-            localStorage.setItem('metadata', JSON.stringify(parsedData));
 
             commit('setTimeTaken', parsedData.timeTaken);
+            commit('setShowAutotainment', parsedData.showAutotainment);
+            commit('setDisableDeleteWarning', parsedData.disableDeleteWarning);
+        },
+        async setAutotainment({commit}, showAutotainment) {
+            commit('setShowAutotainment', showAutotainment);
+            await this.dispatch('saveMetadataToLocalStorage');
+        },
+        async selectEntry({commit}, entry) {
+            commit('setSelectedEntry', entry);
+        },
+        async setDeleteWarning({commit}, disableDeleteWarning) {
+            commit('setDisableDeleteWarning', disableDeleteWarning);
+            await this.dispatch('saveMetadataToLocalStorage');
         }
     }
 });

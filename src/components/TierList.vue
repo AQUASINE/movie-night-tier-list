@@ -15,6 +15,7 @@
           <span class="bigger-info">Left Side:</span> So Bad It's Good
         </div>
       </div>
+      <img src="/autotainment.jpg" alt="Autotainment" class="img__autotainment" :style="{top: `${autotainmentY}px`, left: `${autotainmentX}px`}" v-if="showAutotainment"/>
       <TierComponent v-for="tier in tiers" :name="tier.title" :id="tier.id" :key="tier.id" :letter-style="tier.style"
                      class="flex justify-center align-center">
         <template #left>
@@ -49,7 +50,7 @@ export default {
   name: "TierList",
   components: {TierContent, TierComponent},
   computed: {
-    ...mapState(["tiers", 'leftContent', 'rightContent', 'dock', 'timeTakenForLastScreenshot']),
+    ...mapState(["tiers", 'leftContent', 'rightContent', 'dock', 'timeTakenForLastScreenshot', 'showAutotainment']),
     creatingScreenshotText() {
       const base = "Creating screenshot..."
       if (this.timeRemaining <= 0 || !this.timeTakenForLastScreenshot) {
@@ -61,6 +62,8 @@ export default {
   },
   mounted() {
     this.resetZoom();
+    this.selectAutotainmentPosition();
+
     // when the spacebar is pressed, allow panning
     window.addEventListener("keydown", (e) => {
       if (e.code === "Space" && this.isMouseInTierList) {
@@ -146,7 +149,9 @@ export default {
       sourceTierId: null,
       sourceTierSide: null,
       isTakingScreenshot: false,
-      timeRemaining: 0
+      timeRemaining: 0,
+      autotainmentX: 0,
+      autotainmentY: 0
     }
   },
   methods: {
@@ -176,6 +181,14 @@ export default {
         return null;
       }
       return content[tier.id];
+    },
+    selectAutotainmentPosition() {
+      const autotainMinX = -700;
+      const autotainMaxX = 2900;
+      const autotainMinY = -50;
+      const autotainMaxY = 660;
+      this.autotainmentX = Math.random() * (autotainMaxX - autotainMinX) + autotainMinX;
+      this.autotainmentY = Math.random() * (autotainMaxY - autotainMinY) + autotainMinY;
     },
     handleDragStart({movie, tierId, tierSide}) {
       console.log("drag start in tierlist")
@@ -373,4 +386,14 @@ h1 {
   }
 }
 
+.img__autotainment {
+  height: 65px;
+  aspect-ratio: 27 / 40;
+  min-width: 45px;
+  max-width: 45px;
+  font-size: 10px;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  position: absolute;
+}
 </style>

@@ -16,16 +16,20 @@
           <button @click="resetTierList" class="reset-button pa-4 pt-1 pb-1">Clear</button>
         </div>
         <AddEntryTab v-if="isTabSelected('add')"/>
+        <EditEntryTab v-if="isTabSelected('edit')"/>
+        <SettingsTab v-if="isTabSelected('settings')"/>
       </div>
     </div>
   </div>
 </template>
 <script>
 import AddEntryTab from "@/components/AddEntryTab.vue";
+import EditEntryTab from "@/components/EditEntryTab.vue";
+import SettingsTab from "@/components/SettingsTab.vue";
 
 export default {
   name: 'SidebarComponent',
-  components: {AddEntryTab},
+  components: {SettingsTab, EditEntryTab, AddEntryTab},
   computed: {
 
   },
@@ -46,7 +50,7 @@ export default {
           id: 'settings',
           name: 'Settings',
           icon: 'mdi-cog'
-        }
+        },
       ],
       selectedTab: 'add',
     }
