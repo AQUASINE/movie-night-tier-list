@@ -26,7 +26,9 @@ export const store = createStore({
             "shadowRealm": [],
             "chips": []
         },
-        dock: []
+        dock: [],
+        timeTakenForLastScreenshot: null,
+        showAutotainment: false
     },
     modules: {
         letterboxd
@@ -78,9 +80,18 @@ export const store = createStore({
             for (const tier in state.leftContent) {
                 state.leftContent[tier].reverse();
             }
+        },
+        setTimeTaken(state, timeTaken) {
+            state.timeTakenForLastScreenshot = timeTaken;
         }
     },
     actions: {
+        async storeTimeTaken({commit}, timeTaken) {
+            commit('setTimeTaken', timeTaken);
+            console.log('Time taken: ' + timeTaken);
+
+            await this.dispatch('saveMetadataToLocalStorage');
+        },
         async loadTiersFromFile({commit}) {
             try {
                 const response = await fetch('/tiers.json');
@@ -123,41 +134,46 @@ export const store = createStore({
             const {sourceTierId, sourceTierSide, movie} = payload;
             const {targetTierId, targetTierSide} = payload;
 
-            if (sourceTierId === targetTierId && sourceTierSide === targetTierSide) {
-                console.log("Source and target are the same, no move needed");
-                if (sourceTierSide === "dock") {
-                    console.log(this.state.dock);
-                } else if (sourceTierSide === "left") {
-                    console.log(this.state.leftContent[sourceTierId]);
-                } else if (sourceTierSide === "right") {
-                    console.log(this.state.rightContent[sourceTierId]);
-                }
-                return;
+            let sourceTier;
+            switch (sourceTierSide) {
+                case "dock":
+                    sourceTier = this.state.dock;
+                    break;
+                case "left":
+                    sourceTier = this.state.leftContent[sourceTierId];
+                    break;
+                case "right":
+                    sourceTier = this.state.rightContent[sourceTierId];
+                    break;
             }
 
-            let sourceTier;
-            if (sourceTierSide === "dock") {
-                sourceTier = this.state.dock;
-            } else if (sourceTierSide === "left") {
-                sourceTier = this.state.leftContent[sourceTierId];
-            } else if (sourceTierSide === "right") {
-                sourceTier = this.state.rightContent[sourceTierId];
+
+            if (sourceTierId === targetTierId && sourceTierSide === targetTierSide) {
+                console.log("Source and target are the same, no move needed");
+                console.log("Source tier", sourceTier);
+                return;
             }
 
             const movieIndex = sourceTier.findIndex(m => m.id === movie.id);
             sourceTier.splice(movieIndex, 1);
             commit('setTierContent', {tierId: sourceTierId, tierSide: sourceTierSide, content: sourceTier});
 
-            // add movie to target tier
             let targetTier;
-
-            if (targetTierSide === "left") {
-                targetTier = this.state.leftContent[targetTierId];
-            } else if (targetTierSide === "right") {
-                targetTier = this.state.rightContent[targetTierId];
-            } else if (targetTierSide === "dock") {
-                targetTier = this.state.dock;
+            switch (targetTierSide) {
+                case "left":
+                    targetTier = this.state.leftContent[targetTierId];
+                    break;
+                case "right":
+                    targetTier = this.state.rightContent[targetTierId];
+                    break;
+                case "dock":
+                    targetTier = this.state.dock;
+                    break;
+                default:
+                    console.error("Invalid targetTierSide", targetTierSide);
+                    return;
             }
+
             // put at top of tier for now
             targetTier.unshift(movie);
             commit('setTierContent', {tierId: targetTierId, tierSide: targetTierSide, content: targetTier});
@@ -239,6 +255,25 @@ export const store = createStore({
             });
             await this.dispatch('saveToLocalStorage');
         },
+        async saveMetadataToLocalStorage() {
+            const metadata = {
+                timeTaken: this.state.timeTaken,
+                showAutotainment: this.state.showAutotainment
+            }
+            localStorage.setItem('metadata', JSON.stringify(metadata));
+        },
+        async loadMetadataFromLocalStorage({commit}) {
+            const data = localStorage.getItem('metadata');
+            if (data === null) {
+                console.log("No metadata in localStorage");
+                return;
+            }
+            const parsedData = JSON.parse(data);
+            console.log("Loaded metadata from localStorage", parsedData);
+            localStorage.setItem('metadata', JSON.stringify(parsedData));
+
+            commit('setTimeTaken', parsedData.timeTaken);
+        }
     }
 });
 
