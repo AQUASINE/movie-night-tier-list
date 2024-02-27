@@ -11,6 +11,9 @@
         <img :src="result.imageUrl" class="search-image" :title="result.name" height="30"/>
         <span class="ml-2">{{ result.name }}</span>
       </div>
+      <div class="container__search-message">
+        {{ searchMessage }}
+      </div>
     </div>
     <div class="mt-4">
       <input type="text" placeholder="Title" class="w-full border-bg4 pa-2 mt-2" v-model="selectedInfo.name"/>
@@ -71,6 +74,11 @@ export default {
       if (!this.selectedTier) return "Dock";
       const side = this.isTierLeft ? 'Left' : 'Right';
       return `${side} ${this.tiers.find((t) => t.id === this.selectedTier)?.title}`;
+    },
+    searchMessage() {
+      if (!this.searchText) return "Letterboxd entries will show up here.";
+      if (!this.formattedSearchResults) return "Loading...";
+      if (this.formattedSearchResults.length === 0) return "No results found";
     },
     formValid() {
       return this.selectedInfo.name && this.selectedInfo.imageUrl;
@@ -183,4 +191,13 @@ body {
   min-width: 81px;
 }
 
+.container__search-message {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin-right: 4px;
+  color: var(--bg4);
+}
 </style>

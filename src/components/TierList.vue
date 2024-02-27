@@ -207,10 +207,8 @@ export default {
       }
       const startTime = Date.now();
       this.isTakingScreenshot = true;
+      this.resetZoom();
       console.log(this.$refs.tiersLetters.scrollWidth, this.$refs.tiersLetters.scrollHeight);
-      this.zoom = 1.0;
-      this.panAmountX = 1000;
-      this.panAmountY = 110;
       this.timeRemaining = this.timeTakenForLastScreenshot;
       const progressInterval = setInterval(
           () => {

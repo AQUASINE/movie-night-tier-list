@@ -1,13 +1,14 @@
 {
   "name": "movie-tier-list",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "dev": "node src/server/proxy.js & vite --host",
-    "prod": "node src/server/proxy.js & vite build && cd dist && serve"
+    "prod": "node src/server/proxy.js & vite build && cd dist && serve",
+    "precommit": "npm version patch --git-tag-version=false"
   },
   "dependencies": {
     "axios": "^1.6.3",
