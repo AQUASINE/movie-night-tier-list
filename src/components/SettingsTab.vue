@@ -1,5 +1,8 @@
 <script>
 import {mapState} from "vuex";
+// get version from package.json
+import packageJson from '../../package.json';
+
 
 export default {
   name: "SettingsTab",
@@ -12,6 +15,11 @@ export default {
     },
     setDeleteWarning() {
       this.$store.dispatch('setDeleteWarning', !this.disableDeleteWarning);
+    }
+  },
+  data() {
+    return {
+      version: packageJson.version
     }
   }
 }
@@ -31,7 +39,10 @@ export default {
                 class="mr-2 mb-1"></v-icon>
         <label for="autotain">Disable Delete Warning on Ctrl-Shift-Click</label>
       </div>
-      </div>
+    </div>
+    <div>
+      <div class="opacity-30 mt-4">Movie Night Tier List v{{ version }}</div>
+    </div>
   </div>
 </template>
 
