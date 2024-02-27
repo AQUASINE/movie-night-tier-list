@@ -1,7 +1,12 @@
 <template>
-  <div class="sidebar bg2 pa-4">
-    <div class="flex flex-column justify-space-between h-100">
-      <div>
+  <div class="sidebar bg2 flex flex-column">
+    <div class="flex container__sidebar-tabs">
+      <div v-for="tab in tabs" :key="tab.id" class="item__sidebar-tab" :class="{selected: isTabSelected(tab.id)}" @click="selectedTab = tab.id">
+        <v-icon :icon="tab.icon"/>
+      </div>
+    </div>
+    <div class="flex flex-column justify-space-between flex-1 pa-4 pt-4">
+      <div class="flex flex-column flex-1">
         <div class="mb-3 flex justify-space-between">
           <div>
         <button @click="importTierList" class="border-bg4 pa-4 pt-1 pb-1 mr-3">Load</button>
@@ -10,133 +15,47 @@
           </div>
           <button @click="resetTierList" class="reset-button pa-4 pt-1 pb-1">Clear</button>
         </div>
-        <h1 class="font-bold text-2xl">Add Entry</h1>
-        <div>
-          <input type="text" class="w-full border-bg4 pa-2 mt-2" placeholder="Search Letterboxd" v-model="searchText"
-                 @input="searchLetterboxd"/>
-          <div class="divide-y-1 divide-color-white h-52 overflow-scroll border-bg4 mt-4 pl-2">
-            <div v-for="result in formattedSearchResults" :key="result.name" @click="setSelected(result)"
-                 class="flex items-center mt-2 divide-y-1 divide-color-white overflow-hidden whitespace-nowrap text-ellipsis">
-              <img :src="result.imageUrl" class="search-image" :title="result.name" height="30"/>
-              <span class="ml-2">{{ result.name }}</span>
-            </div>
-          </div>
-          <div class="mt-4">
-            <input type="text" placeholder="Title" class="w-full border-bg4 pa-2 mt-2" v-model="selectedInfo.name"/>
-            <div class="opacity-30">Letterboxd ID: {{ selectedInfo.letterboxdId }}</div>
-            <div class="flex mt-4">
-              <div class="uploaded-image-wrap mr-3">
-              <img :src="selectedInfo.imageUrl" class="uploaded-image" alt="" v-if="selectedInfo.imageUrl"/>
-              </div>
-              <div>
-                <label for="image-upload" class="cursor-pointer">Enter image url</label>
-                <input type="text" placeholder="Image URL" class="w-full border-bg4 pa-2 mt-2"
-                       v-model="selectedInfo.imageUrl"/>
-              </div>
-            </div>
-            <div class="mt-4 button__soBadItsGood" :class="{selected: isTierLeft}" @click="toggleLeftSide">
-              <v-icon :icon="isTierLeft ? 'mdi-checkbox-marked' : 'mdi-checkbox-blank-outline'"
-                      class="mr-2 mb-1"></v-icon>
-              So Bad It's Good
-            </div>
-            <div class="mt-3 mb-1 flex justify-space-between align-center">
-              <div class="mt-2">
-              <label for="tier-select">Select a Tier: </label>
-              <select name="tier-select" class="tier-select" v-model="selectedTier">
-                <option :value="tier" v-for="tier in tierValues" :key="tier">{{ getTierName(tier) }}</option>
-              </select>
-              </div>
-              <button class="w-50% border-bg4 pt-1 pb-1 pl-4 pr-4 mt-2" @click="resetTier">Reset Tier</button>
-            </div>
-          </div>
-        </div>
+        <AddEntryTab v-if="isTabSelected('add')"/>
+        <EditEntryTab v-if="isTabSelected('edit')"/>
+        <SettingsTab v-if="isTabSelected('settings')"/>
       </div>
-      <button class="w-full addbutton pa-3 mt-2" @click="addEntry" :class="{disable: !formValid}">Add to {{ selectedTierName }}</button>
     </div>
   </div>
 </template>
 <script>
-import {mapState} from "vuex";
-import {v4} from "uuid";
+import AddEntryTab from "@/components/AddEntryTab.vue";
+import EditEntryTab from "@/components/EditEntryTab.vue";
+import SettingsTab from "@/components/SettingsTab.vue";
 
 export default {
   name: 'SidebarComponent',
-  emits: ['screenshot'],
+  components: {SettingsTab, EditEntryTab, AddEntryTab},
   computed: {
-    ...mapState('letterboxd', ['searchResults']),
-    ...mapState(['tiers', 'leftContent', 'rightContent']),
-    selectedTierName() {
-      if (!this.selectedTier) return "Dock";
-      const side = this.isTierLeft ? 'Left' : 'Right';
-      return `${side} ${this.tiers.find((t) => t.id === this.selectedTier)?.title}`;
-    },
-    formValid() {
-      return this.selectedInfo.name && this.selectedInfo.imageUrl;
-    },
-    formattedSearchResults() {
-      if (!this.searchResults) return;
-      return this.searchResults.map((result) => {
-        const film = result.film;
-        return {
-          name: film.name,
-          imageUrl: film.poster?.sizes[0].url,
-          letterboxdId: film.id,
-        }
-      })
-    },
-    tierValues() {
-      // use keys from leftContent or rightContent depending on isTierLeft
-      const content = this.isTierLeft ? this.leftContent : this.rightContent;
-      return Object.keys(content);
-    }
+
   },
+  emits: ['screenshot'],
   data() {
     return {
-      searchDebounce: null,
-      searchText: '',
-      selectedTier: '',
-      isTierLeft: false,
-      selectedInfo: {
-        name: '',
-        letterboxdId: '',
-        id: '',
+      tabs: [{
+        id: 'add',
+        name: 'Add Entry',
+        icon: 'mdi-plus'
       },
+        {
+          id: 'edit',
+          name: 'Edit Entry',
+          icon: 'mdi-pencil'
+        },
+        {
+          id: 'settings',
+          name: 'Settings',
+          icon: 'mdi-cog'
+        },
+      ],
+      selectedTab: 'add',
     }
   },
   methods: {
-    resetTier() {
-      this.selectedTier = '';
-    },
-    searchLetterboxd() {
-      const query = this.searchText;
-      clearTimeout(this.searchDebounce);
-      this.searchDebounce = setTimeout(() => {
-        this.$store.dispatch('letterboxd/search', query);
-      }, 500);
-    },
-    setSelected(result) {
-      this.selectedInfo = {...result};
-    },
-    toggleLeftSide() {
-      this.isTierLeft = !this.isTierLeft;
-    },
-    addEntry() {
-      const selectedInfo = {...this.selectedInfo};
-
-      if (!selectedInfo.id) {
-        selectedInfo.id = v4();
-      }
-
-      const payload = {
-        film: selectedInfo,
-        tier: this.selectedTier,
-        isLeft: this.isTierLeft,
-      }
-      this.$store.dispatch('addEntry', payload);
-    },
-    getTierName(tier) {
-      return this.tiers.find((t) => t.id === tier)?.title;
-    },
     importTierList() {
       // open file picker
       const input = document.createElement('input');
@@ -158,6 +77,9 @@ export default {
     async exportTierList() {
       await this.$store.dispatch('exportTierListToFile');
     },
+    isTabSelected(tab) {
+      return this.selectedTab === tab;
+    },
     resetTierList() {
       // show prompt
       const confirmed = confirm('Are you sure you want to clear your tier list?');
@@ -177,47 +99,10 @@ body {
   color: #ffffff;
 }
 
-.search-image {
-  height: 45px;
-  aspect-ratio: 27 / 40;
-}
-
-.uploaded-image {
-  height: 120px;
-  width: 81px;
-  min-width: 81px;
-  aspect-ratio: 27 / 40;
-  border-radius: 3px;
-}
-
 .sidebar {
   width: 400px;
   overflow: auto;
   max-height: 100vh;
-}
-
-.button__soBadItsGood {
-  border: 1px solid #ffffff;
-  padding: 14px 10px 10px;
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.button__soBadItsGood.selected {
-  background-color: #ffffff;
-  color: var(--bg2);
-}
-
-.tier-select {
-  background-color: var(--bg3);
-  color: #ffffff;
-  border: 1px solid var(--bg4);
-  padding: 4px;
-  width: 140px;
-  border-radius: 4px;
-  margin-left: 6px;
 }
 
 .addbutton {
@@ -241,12 +126,34 @@ body {
   border-radius: 4px;
 }
 
-.uploaded-image-wrap {
-  border: 1px solid var(--bg4);
-  border-radius: 4px;
-  height: 120px;
-  width: 81px;
-  aspect-ratio: 27 / 40;
-  min-width: 81px;
+.item__sidebar-tab {
+  height: 35px;
+  margin-top: 4px;
+  max-width: 75px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-right: 1px solid var(--bg4);
+  border-top: 1px solid var(--bg4);
+  border-left: 1px solid var(--bg4);
+  border-top-right-radius: 5px;
+  border-top-left-radius: 5px;
+  color: var(--bg4);
+  margin-right: 4px;
+}
+
+.item__sidebar-tab:first-child {
+}
+
+.item__sidebar-tab.selected {
+  background-color: var(--primary);
+  color: var(--bg2);
+}
+
+
+.container__sidebar-tabs {
+  border-bottom: 1px solid var(--bg4);
+  padding: 0 5px;
 }
 </style>

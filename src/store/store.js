@@ -26,10 +26,50 @@ export const store = createStore({
             "shadowRealm": [],
             "chips": []
         },
-        dock: []
+        dock: [],
+        selectedEntry: null,
+        selectedTab: 'add',
+        timeTakenForLastScreenshot: null,
+        showAutotainment: false,
+        disableDeleteWarning: false
     },
     modules: {
         letterboxd
+    },
+    getters: {
+        findTier: (state) => (tierId, tierSide) => {
+            console.log("Finding tier", tierId, tierSide);
+            switch (tierSide) {
+                case "left":
+                    return state.leftContent[tierId];
+                case "right":
+                    return state.rightContent[tierId];
+                case "dock":
+                    return state.dock;
+            }
+            throw new Error("Invalid tierSide");
+        },
+        findEntryTier: (state) => (entryId) => {
+            for (const tierId in state.leftContent) {
+                const tier = state.leftContent[tierId];
+                const movie = tier.find(m => m.id === entryId);
+                if (movie) {
+                    return {tierId, tierSide: "left"};
+                }
+            }
+            for (const tierId in state.rightContent) {
+                const tier = state.rightContent[tierId];
+                const movie = tier.find(m => m.id === entryId);
+                if (movie) {
+                    return {tierId, tierSide: "right"};
+                }
+            }
+            const movie = state.dock.find(m => m.id === entryId);
+            if (movie) {
+                return {tierId: "dock", tierSide: "dock"};
+            }
+            throw new Error("Could not find entry");
+        }
     },
     mutations: {
         setTiers(state, tiers) {
@@ -78,9 +118,27 @@ export const store = createStore({
             for (const tier in state.leftContent) {
                 state.leftContent[tier].reverse();
             }
+        },
+        setTimeTaken(state, timeTaken) {
+            state.timeTakenForLastScreenshot = timeTaken;
+        },
+        setSelectedEntry(state, entry) {
+            state.selectedEntry = entry;
+        },
+        setShowAutotainment(state, showAutotainment) {
+            state.showAutotainment = showAutotainment;
+        },
+        setDisableDeleteWarning(state, disableDeleteWarning) {
+            state.disableDeleteWarning = disableDeleteWarning;
         }
     },
     actions: {
+        async storeTimeTaken({commit}, timeTaken) {
+            commit('setTimeTaken', timeTaken);
+            console.log('Time taken: ' + timeTaken);
+
+            await this.dispatch('saveMetadataToLocalStorage');
+        },
         async loadTiersFromFile({commit}) {
             try {
                 const response = await fetch('/tiers.json');
@@ -100,14 +158,7 @@ export const store = createStore({
         },
         async removeEntryFromTier({commit}, payload) {
             const {tierId, tierSide, entry} = payload;
-            let tier;
-            if (tierSide === "left") {
-                tier = this.state.leftContent[tierId];
-            } else if (tierSide === "right") {
-                tier = this.state.rightContent[tierId];
-            } else if (tierSide === "dock") {
-                tier = this.state.dock;
-            }
+            let tier = this.getters.findTier(tierId, tierSide);
 
             const movieIndex = tier.findIndex(m => m.id === entry.id);
             tier.splice(movieIndex, 1);
@@ -123,44 +174,51 @@ export const store = createStore({
             const {sourceTierId, sourceTierSide, movie} = payload;
             const {targetTierId, targetTierSide} = payload;
 
-            if (sourceTierId === targetTierId && sourceTierSide === targetTierSide) {
-                console.log("Source and target are the same, no move needed");
-                if (sourceTierSide === "dock") {
-                    console.log(this.state.dock);
-                } else if (sourceTierSide === "left") {
-                    console.log(this.state.leftContent[sourceTierId]);
-                } else if (sourceTierSide === "right") {
-                    console.log(this.state.rightContent[sourceTierId]);
-                }
-                return;
+            let sourceTier;
+            switch (sourceTierSide) {
+                case "dock":
+                    sourceTier = this.state.dock;
+                    break;
+                case "left":
+                    sourceTier = this.state.leftContent[sourceTierId];
+                    break;
+                case "right":
+                    sourceTier = this.state.rightContent[sourceTierId];
+                    break;
             }
 
-            let sourceTier;
-            if (sourceTierSide === "dock") {
-                sourceTier = this.state.dock;
-            } else if (sourceTierSide === "left") {
-                sourceTier = this.state.leftContent[sourceTierId];
-            } else if (sourceTierSide === "right") {
-                sourceTier = this.state.rightContent[sourceTierId];
+
+            if (sourceTierId === targetTierId && sourceTierSide === targetTierSide) {
+                console.log("Source and target are the same, no move needed");
+                console.log("Source tier", sourceTier);
+                return;
             }
 
             const movieIndex = sourceTier.findIndex(m => m.id === movie.id);
             sourceTier.splice(movieIndex, 1);
             commit('setTierContent', {tierId: sourceTierId, tierSide: sourceTierSide, content: sourceTier});
 
-            // add movie to target tier
             let targetTier;
-
-            if (targetTierSide === "left") {
-                targetTier = this.state.leftContent[targetTierId];
-            } else if (targetTierSide === "right") {
-                targetTier = this.state.rightContent[targetTierId];
-            } else if (targetTierSide === "dock") {
-                targetTier = this.state.dock;
+            switch (targetTierSide) {
+                case "left":
+                    targetTier = this.state.leftContent[targetTierId];
+                    break;
+                case "right":
+                    targetTier = this.state.rightContent[targetTierId];
+                    break;
+                case "dock":
+                    targetTier = this.state.dock;
+                    break;
+                default:
+                    console.error("Invalid targetTierSide", targetTierSide);
+                    return;
             }
+
             // put at top of tier for now
             targetTier.unshift(movie);
             commit('setTierContent', {tierId: targetTierId, tierSide: targetTierSide, content: targetTier});
+
+            await this.dispatch('saveToLocalStorage');
         },
         async exportTierList() {
             const exportData = {
@@ -237,6 +295,50 @@ export const store = createStore({
                 },
                 dock: []
             });
+            await this.dispatch('saveToLocalStorage');
+        },
+        async saveMetadataToLocalStorage() {
+            const metadata = {
+                timeTaken: this.state.timeTaken,
+                showAutotainment: this.state.showAutotainment,
+                disableDeleteWarning: this.state.disableDeleteWarning
+            }
+            localStorage.setItem('metadata', JSON.stringify(metadata));
+        },
+        async loadMetadataFromLocalStorage({commit}) {
+            const data = localStorage.getItem('metadata');
+            if (data === null) {
+                console.log("No metadata in localStorage");
+                return;
+            }
+            const parsedData = JSON.parse(data);
+            console.log("Loaded metadata from localStorage", parsedData);
+
+            commit('setTimeTaken', parsedData.timeTaken);
+            commit('setShowAutotainment', parsedData.showAutotainment);
+            commit('setDisableDeleteWarning', parsedData.disableDeleteWarning);
+        },
+        async setAutotainment({commit}, showAutotainment) {
+            commit('setShowAutotainment', showAutotainment);
+            await this.dispatch('saveMetadataToLocalStorage');
+        },
+        async selectEntry({commit}, entry) {
+            commit('setSelectedEntry', entry);
+        },
+        async setDeleteWarning({commit}, disableDeleteWarning) {
+            commit('setDisableDeleteWarning', disableDeleteWarning);
+            await this.dispatch('saveMetadataToLocalStorage');
+        },
+        async updateEntry({commit}, payload) {
+            const entry = payload;
+
+            const {tierId, tierSide} = this.getters.findEntryTier(entry.id);
+            let tier = this.getters.findTier(tierId, tierSide);
+
+            const movieIndex = tier.findIndex(m => m.id === entry.id);
+            tier[movieIndex] = entry;
+            commit('setTierContent', {tierId, tierSide, content: tier});
+
             await this.dispatch('saveToLocalStorage');
         },
     }

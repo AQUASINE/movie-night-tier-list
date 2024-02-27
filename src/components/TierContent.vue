@@ -48,14 +48,18 @@ export default {
       // check if control and shift are pressed
       if (event.ctrlKey && event.shiftKey) {
         console.log('ctrl + shift + click');
-        const confirm = window.confirm('Are you sure you want to remove this entry from the tier list?');
+        const disableWarning = this.$store.state.disableDeleteWarning;
+        const confirm = disableWarning || window.confirm('Are you sure you want to remove this entry from the tier list?');
         if (!confirm) return;
         this.$store.dispatch('removeEntryFromTier', {
           entry: movie,
           tierId: this.id,
           tierSide: this.side
         });
+        return;
       }
+
+      this.$store.dispatch('selectEntry', movie);
     }
   },
   computed: {

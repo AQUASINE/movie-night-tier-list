@@ -15,6 +15,7 @@
           <span class="bigger-info">Left Side:</span> So Bad It's Good
         </div>
       </div>
+      <img src="/autotainment.jpg" alt="Autotainment" class="img__autotainment" :style="{top: `${autotainmentY}px`, left: `${autotainmentX}px`}" v-if="showAutotainment"/>
       <TierComponent v-for="tier in tiers" :name="tier.title" :id="tier.id" :key="tier.id" :letter-style="tier.style"
                      class="flex justify-center align-center">
         <template #left>
@@ -31,6 +32,11 @@
     </div>
     <TierContent :content="dock" id="dock" class="dock" @dragstart="handleDragStart" @drop="handleDrop('dock', 'dock')"
                  side="dock"/>
+    <div class="item">
+    <div class="item__loading-screenshot" v-if="isTakingScreenshot">
+      {{ creatingScreenshotText }}
+    </div>
+    </div>
   </div>
 </template>
 
@@ -44,10 +50,20 @@ export default {
   name: "TierList",
   components: {TierContent, TierComponent},
   computed: {
-    ...mapState(["tiers", 'leftContent', 'rightContent', 'dock']),
+    ...mapState(["tiers", 'leftContent', 'rightContent', 'dock', 'timeTakenForLastScreenshot', 'showAutotainment']),
+    creatingScreenshotText() {
+      const base = "Creating screenshot..."
+      if (this.timeRemaining <= 0 || !this.timeTakenForLastScreenshot) {
+        return base + " This may take a while."
+      }
+      const percent = Math.round(((this.timeTakenForLastScreenshot - this.timeRemaining) / this.timeTakenForLastScreenshot) * 100)
+      return base + ` (est. ${percent}%)`
+    }
   },
   mounted() {
     this.resetZoom();
+    this.selectAutotainmentPosition();
+
     // when the spacebar is pressed, allow panning
     window.addEventListener("keydown", (e) => {
       if (e.code === "Space" && this.isMouseInTierList) {
@@ -116,8 +132,6 @@ export default {
   },
   watch: {
     zoom() {
-      console.log(this.zoom);
-
       // if near 1, snap to 1
       if (this.zoom > 0.9 && this.zoom < 1.1) {
         this.zoom = 1.0;
@@ -134,6 +148,10 @@ export default {
       draggedMovie: null,
       sourceTierId: null,
       sourceTierSide: null,
+      isTakingScreenshot: false,
+      timeRemaining: 0,
+      autotainmentX: 0,
+      autotainmentY: 0
     }
   },
   methods: {
@@ -164,6 +182,14 @@ export default {
       }
       return content[tier.id];
     },
+    selectAutotainmentPosition() {
+      const autotainMinX = -700;
+      const autotainMaxX = 2900;
+      const autotainMinY = -50;
+      const autotainMaxY = 660;
+      this.autotainmentX = Math.random() * (autotainMaxX - autotainMinX) + autotainMinX;
+      this.autotainmentY = Math.random() * (autotainMaxY - autotainMinY) + autotainMinY;
+    },
     handleDragStart({movie, tierId, tierSide}) {
       console.log("drag start in tierlist")
       this.draggedMovie = movie;
@@ -176,10 +202,24 @@ export default {
       this.panAmountY = 110;
     },
     screenshot() {
+      if (this.isTakingScreenshot) {
+        return;
+      }
+      const startTime = Date.now();
+      this.isTakingScreenshot = true;
+      this.resetZoom();
       console.log(this.$refs.tiersLetters.scrollWidth, this.$refs.tiersLetters.scrollHeight);
-      this.zoom = 1.0;
-      this.panAmountX = 1000;
-      this.panAmountY = 110;
+      this.timeRemaining = this.timeTakenForLastScreenshot;
+      const progressInterval = setInterval(
+          () => {
+            if (this.timeTakenForLastScreenshot === null) {
+              this.timeRemaining = 0;
+              return;
+            }
+            const elapsed = Date.now() - startTime;
+            this.timeRemaining = this.timeTakenForLastScreenshot - elapsed;
+          }, 1000
+      )
       html2canvas(
           this.$refs.tiersLetters,
           {
@@ -215,7 +255,19 @@ export default {
         a.download = "tierlist.png";
         a.click();
         this.resetZoom();
-      });
+        const endTime = Date.now();
+        const timeTaken = endTime - startTime;
+        // store previous time taken
+
+        this.$store.dispatch('storeTimeTaken', timeTaken);
+
+        clearInterval(progressInterval);
+        this.isTakingScreenshot = false;
+      }).catch(e => {
+        console.error(e);
+        clearInterval(progressInterval);
+        this.isTakingScreenshot = false;
+      })
     }
   }
 }
@@ -298,5 +350,48 @@ h1 {
 
 .bigger-info {
   font-size: 48px;
+}
+
+.item__loading-screenshot {
+  position: absolute;
+  top: 1rem;
+  right: 26.5rem;
+  animation: loading 6s ease-in-out infinite;
+  background: linear-gradient(90deg, #777777, #ffffff, #777777, #ffffff);
+  background-size: 500% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 100% 0;
+    opacity: 0.4;
+  }
+  25% {
+    opacity: 0.95;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  75% {
+    opacity: 0.95
+  }
+  100% {
+    background-position: -100% 0;
+    opacity: 0.4;
+  }
+}
+
+.img__autotainment {
+  height: 65px;
+  aspect-ratio: 27 / 40;
+  min-width: 45px;
+  max-width: 45px;
+  font-size: 10px;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  position: absolute;
 }
 </style>

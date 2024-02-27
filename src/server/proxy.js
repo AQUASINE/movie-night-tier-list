@@ -12,7 +12,6 @@ app.use(express.json());
 
 app.get('/api/search', async (req, res) => {
     console.log('GET /api/search')
-    console.log(req.query)
     try {
         const response = await axios.get(
             'https://api.letterboxd.com/api/v0/search',
@@ -41,6 +40,7 @@ app.get('/image_proxy', async (req, res) => {
             }
         );
         res.set('Content-Type', 'image/jpeg');
+        res.set('Cache-Control', 'public, max-age=31536000');
         res.send(response.data);
     } catch (error) {
         console.error(error);
