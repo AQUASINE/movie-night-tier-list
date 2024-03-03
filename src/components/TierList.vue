@@ -201,13 +201,9 @@ export default {
       this.panAmountX = 1000;
       this.panAmountY = 110;
     },
-    screenshot() {
-      if (this.isTakingScreenshot) {
-        return;
-      }
+    captureImage() {
       const startTime = Date.now();
       this.isTakingScreenshot = true;
-      this.resetZoom();
       console.log(this.$refs.tiersLetters.scrollWidth, this.$refs.tiersLetters.scrollHeight);
       this.timeRemaining = this.timeTakenForLastScreenshot;
       const progressInterval = setInterval(
@@ -268,6 +264,16 @@ export default {
         clearInterval(progressInterval);
         this.isTakingScreenshot = false;
       })
+    },
+    screenshot() {
+      if (this.isTakingScreenshot) {
+        return;
+      }
+      this.resetZoom();
+
+      this.$nextTick(() => {
+        this.captureImage();
+      });
     }
   }
 }
