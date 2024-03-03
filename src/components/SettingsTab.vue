@@ -1,6 +1,5 @@
 <script>
 import {mapState} from "vuex";
-// get version from package.json
 import packageJson from '../../package.json';
 
 
@@ -41,7 +40,8 @@ export default {
       </div>
     </div>
     <div>
-      <div class="opacity-30 mt-4">Movie Night Tier List v{{ version }}</div>
+      <img src="/logo-text.svg" class="logo -mb-4" alt="Movie Night Tier List Logo" width="200"/>
+      <div class="opacity-30 mt-4">v{{ version }}</div>
     </div>
   </div>
 </template>
