@@ -1,8 +1,9 @@
 <template>
   <div class="tier-list h-screen overflow-hidden" ref="tierList">
-    <div class="fixed z-40">
+    <div class="fixed z-40 container__left-controls">
       <v-slider v-model="zoom" direction="vertical" min="0.25" max="3" step="0.01"
-                append-icon="mdi-magnify-plus-outline" prepend-icon="mdi-magnify-minus-outline" class="ma-4"/>
+                append-icon="mdi-magnify-plus-outline" prepend-icon="mdi-magnify-minus-outline" class="ma-4"
+                color="white"/>
     </div>
     <div class="tiers-letters select-none" ref="tiersLetters"
          :style="{transform: 'scale(' + zoom + ') translateX(' + panAmountX + 'px) translateY(' + panAmountY + 'px)'}">
@@ -15,7 +16,10 @@
           <span class="bigger-info">Left Side:</span> So Bad It's Good
         </div>
       </div>
-      <img src="/autotainment.jpg" alt="Autotainment" class="img__autotainment" :style="{top: `${autotainmentY}px`, left: `${autotainmentX}px`}" v-if="showAutotainment"/>
+      <img src="/autotainment.jpg" alt="Autotainment" class="img__autotainment"
+           :style="{top: `${autotainmentY}px`, left: `${autotainmentX}px`}" v-if="showAutotainment"/>
+      <img src="/famous.webp" alt="famous" class="img__famous" v-if="showCloudggren">
+      <img src="/dream.png" alt="dream" class="img__dream" v-if="showDream">
       <TierComponent v-for="tier in tiers" :name="tier.title" :id="tier.id" :key="tier.id" :letter-style="tier.style"
                      class="flex justify-center align-center">
         <template #left>
@@ -30,12 +34,19 @@
         </template>
       </TierComponent>
     </div>
-    <TierContent :content="dock" id="dock" class="dock" @dragstart="handleDragStart" @drop="handleDrop('dock', 'dock')"
-                 side="dock"/>
-    <div class="item">
-    <div class="item__loading-screenshot" v-if="isTakingScreenshot">
-      {{ creatingScreenshotText }}
+    <div class="dock-wrapper">
+      <div class="button__toggle-collapse">
+        <v-icon :icon="dockCollapsed ? 'mdi-chevron-up' : 'mdi-chevron-down'" @click="toggleDockCollapse"/>
+      </div>
+      <TierContent :content="dock" id="dock" class="dock" :class="{collapsed: dockCollapsed}"
+                   @dragstart="handleDragStart"
+                   @drop="handleDrop('dock', 'dock')"
+                   side="dock"/>
     </div>
+    <div class="item">
+      <div class="item__loading-screenshot" v-if="isTakingScreenshot">
+        {{ creatingScreenshotText }}
+      </div>
     </div>
   </div>
 </template>
@@ -50,7 +61,7 @@ export default {
   name: "TierList",
   components: {TierContent, TierComponent},
   computed: {
-    ...mapState(["tiers", 'leftContent', 'rightContent', 'dock', 'timeTakenForLastScreenshot', 'showAutotainment']),
+    ...mapState(["tiers", 'leftContent', 'rightContent', 'dock', 'timeTakenForLastScreenshot', 'showAutotainment', 'dockCollapsed', 'showCloudggren', 'showDream']),
     creatingScreenshotText() {
       const base = "Creating screenshot..."
       if (this.timeRemaining <= 0 || !this.timeTakenForLastScreenshot) {
@@ -155,6 +166,9 @@ export default {
     }
   },
   methods: {
+    toggleDockCollapse() {
+      this.$store.dispatch('toggleDockCollapse');
+    },
     handleDrop(tierSide, tierId) {
       console.log("drop in tierlist", tierSide, tierId);
       if (!this.draggedMovie || !this.sourceTierId) {
@@ -319,6 +333,7 @@ h1 {
   top: 0;
   white-space: nowrap;
   transform: translateX(-1850px);
+  pointer-events: none;
 }
 
 .dock {
@@ -335,6 +350,30 @@ h1 {
   border-bottom: none;
   justify-content: center;
   align-items: center;
+  z-index: 100;
+  transition: transform 0.3s;
+}
+
+.dock.collapsed {
+  transform: translateY(100%);
+}
+
+.button__toggle-collapse {
+  position: fixed;
+  bottom: 0;
+  left: 5px;
+  width: 35px;
+  height: 30px;
+  z-index: 105;
+  display: flex;
+  border-top-right-radius: 100000px;
+  border-top-left-radius: 100000px;
+  background-color: #1a1a1a;
+  border: 1px solid var(--bg4);
+  border-bottom: none;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
 }
 
 .info__movie-night {
@@ -399,5 +438,33 @@ h1 {
   overflow-wrap: break-word;
   overflow: hidden;
   position: absolute;
+}
+
+.button__toggle-collapse {
+}
+
+.container__left-controls {
+  height: 100%;
+  padding-right: 30px;
+  background: linear-gradient(90deg, #00000055, #00000055, transparent);
+}
+
+.img__famous {
+  position: absolute;
+  top: 50px;
+  left: -472px;
+  aspect-ratio: 1;
+  height: 5px;
+  z-index: 2;
+  opacity: 0.5;
+}
+
+.img__dream {
+  position: absolute;
+  top: 325px;
+  left: -479px;
+  aspect-ratio: 1;
+  z-index: 100;
+  height: 10px;
 }
 </style>

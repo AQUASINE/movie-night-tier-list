@@ -31,7 +31,10 @@ export const store = createStore({
         selectedTab: 'add',
         timeTakenForLastScreenshot: null,
         showAutotainment: false,
-        disableDeleteWarning: false
+        disableDeleteWarning: false,
+        dockCollapsed: false,
+        showCloudggren: false,
+        showDream: false
     },
     modules: {
         letterboxd
@@ -114,6 +117,9 @@ export const store = createStore({
             }
             tier.splice(newIndex, 0, tier.splice(oldIndex, 1)[0]);
         },
+        toggleDockCollapse(state) {
+            state.dockCollapsed = !state.dockCollapsed;
+        },
         reverseLeftContent(state) {
             for (const tier in state.leftContent) {
                 state.leftContent[tier].reverse();
@@ -127,6 +133,12 @@ export const store = createStore({
         },
         setShowAutotainment(state, showAutotainment) {
             state.showAutotainment = showAutotainment;
+        },
+        setShowCloudggren(state, showCloudggren) {
+            state.showCloudggren = showCloudggren;
+        },
+        setShowDream(state, showDream) {
+            state.showDream = showDream;
         },
         setDisableDeleteWarning(state, disableDeleteWarning) {
             state.disableDeleteWarning = disableDeleteWarning;
@@ -301,7 +313,9 @@ export const store = createStore({
             const metadata = {
                 timeTaken: this.state.timeTaken,
                 showAutotainment: this.state.showAutotainment,
-                disableDeleteWarning: this.state.disableDeleteWarning
+                disableDeleteWarning: this.state.disableDeleteWarning,
+                showCloudggren: this.state.showCloudggren,
+                showDream: this.state.showDream
             }
             localStorage.setItem('metadata', JSON.stringify(metadata));
         },
@@ -317,6 +331,20 @@ export const store = createStore({
             commit('setTimeTaken', parsedData.timeTaken);
             commit('setShowAutotainment', parsedData.showAutotainment);
             commit('setDisableDeleteWarning', parsedData.disableDeleteWarning);
+            commit('setShowCloudggren', parsedData.showCloudggren);
+            commit('setShowDream', parsedData.showDream);
+        },
+        async setShowCloudggren({commit}, showCloudggren) {
+            commit('setShowCloudggren', showCloudggren);
+            await this.dispatch('saveMetadataToLocalStorage');
+        },
+        async setShowDream({commit}, showDream) {
+            commit('setShowDream', showDream);
+            await this.dispatch('saveMetadataToLocalStorage');
+        },
+        async toggleDockCollapse({commit}) {
+            commit('toggleDockCollapse');
+            await this.dispatch('saveMetadataToLocalStorage');
         },
         async setAutotainment({commit}, showAutotainment) {
             commit('setShowAutotainment', showAutotainment);
