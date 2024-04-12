@@ -78,6 +78,19 @@ app.get('/api/search', async (req, res) => {
     }
 });
 
+app.get('/api/film/:id', async (req, res) => {
+    console.log('GET /api/film/:id')
+    try {
+        const response = await axios.get(
+            `https://api.letterboxd.com/api/v0/film/${req.params.id}`
+        );
+        res.json(response.data);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 app.get('/image_proxy', async (req, res) => {
     if (!req.query.url) {
         res.status(400).send('Bad Request');

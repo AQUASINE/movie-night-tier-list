@@ -1,5 +1,6 @@
 <script>
 import {mapState} from "vuex";
+import {BASE_URL} from '../store/modules/letterboxd';
 
 export default {
   name: "EditEntryTab",
@@ -13,10 +14,21 @@ export default {
     saveEntry() {
       this.$store.dispatch('updateEntry', this.entry)
     },
+    fetchLetterboxdData() {
+      if (!this.entry?.letterboxdId) {
+        return;
+      }
+      fetch(`${BASE_URL}/api/film/${this.entry.letterboxdId}`)
+        .then(response => response.json())
+        .then(data => {
+          this.letterboxdData = data;
+        })
+    }
   },
   data() {
     return {
-      entry: null
+      entry: null,
+      letterboxdData: null
     }
   },
   watch: {
@@ -24,6 +36,7 @@ export default {
       immediate: true,
       handler(val) {
         this.entry = JSON.parse(JSON.stringify(val));
+        this.fetchLetterboxdData();
       }
     }
   }
@@ -49,6 +62,9 @@ export default {
     </div>
     <div v-else class="flex-1 mt-3">
       Click on an entry to edit.
+    </div>
+    <div>
+      {{ letterboxdData }}
     </div>
     <button class="w-full addbutton pa-3 mt-2" @click="saveEntry" :class="{disable: !formValid}">Save</button>
   </div>

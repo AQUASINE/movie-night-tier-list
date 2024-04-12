@@ -103,6 +103,8 @@ body {
   width: 400px;
   overflow: auto;
   max-height: 100vh;
+  z-index: 1000;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
 .addbutton {
