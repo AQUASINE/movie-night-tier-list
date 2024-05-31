@@ -18,5 +18,5 @@ npm run dev
 
 ## To-do:
 - [ ] Fix drag and drop so that you don't have to drag into a tier before moving it within the tier
-- [ ] Ability to hide dock
+- [X] Ability to hide dock
 - [ ] See ratings and reviews from Letterboxd
