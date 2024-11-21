@@ -31,7 +31,7 @@ import ReviewTab from "@/components/ReviewTab.vue";
 
 export default {
   name: 'SidebarComponent',
-  components: {SettingsTab, EditEntryTab, AddEntryTab},
+  components: {ReviewTab, SettingsTab, EditEntryTab, AddEntryTab},
   computed: {
 
   },

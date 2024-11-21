@@ -79,6 +79,7 @@ export default {
       if (!this.searchText) return "Letterboxd entries will show up here.";
       if (!this.formattedSearchResults) return "Loading...";
       if (this.formattedSearchResults.length === 0) return "No results found";
+      return "";
     },
     formValid() {
       return this.selectedInfo.name && this.selectedInfo.imageUrl;
