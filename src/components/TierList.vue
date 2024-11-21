@@ -315,11 +315,11 @@ h1 {
 
 
 .tier-left {
-  min-width: 1300px;
+  min-width: 1850px;
 }
 
 .tier-right {
-  width: 3700px;
+  width: 4750px;
 }
 
 .header__movie-night {
