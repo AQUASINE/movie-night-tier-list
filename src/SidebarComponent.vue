@@ -17,6 +17,7 @@
         </div>
         <AddEntryTab v-if="isTabSelected('add')"/>
         <EditEntryTab v-if="isTabSelected('edit')"/>
+        <ReviewTab v-if="isTabSelected('review')"/>
         <SettingsTab v-if="isTabSelected('settings')"/>
       </div>
     </div>
@@ -26,6 +27,7 @@
 import AddEntryTab from "@/components/AddEntryTab.vue";
 import EditEntryTab from "@/components/EditEntryTab.vue";
 import SettingsTab from "@/components/SettingsTab.vue";
+import ReviewTab from "@/components/ReviewTab.vue";
 
 export default {
   name: 'SidebarComponent',
@@ -45,6 +47,11 @@ export default {
           id: 'edit',
           name: 'Edit Entry',
           icon: 'mdi-pencil'
+        },
+        {
+          id: 'review',
+          name: 'Review',
+          icon: 'mdi-star'
         },
         {
           id: 'settings',
