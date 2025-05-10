@@ -55,9 +55,6 @@ const fetchAndSaveImages = async () => {
     }
 }
 
-fetchAndSaveImages().then(() => {
-    console.log('Images fetched and saved');
-});
 
 app.use(cors());
 app.use(express.json());
@@ -125,4 +122,7 @@ app.get('/image_proxy', async (req, res) => {
 
 app.listen(port, '0.0.0.0', () => {
     console.log(`Proxy server listening at http://localhost:${port}`);
+    fetchAndSaveImages().then(() => {
+        console.log('Images fetched and saved');
+    });
 });

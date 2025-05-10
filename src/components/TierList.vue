@@ -235,10 +235,10 @@ export default {
           {
             allowTaint: true,
             proxy: "https://a.ltrbxd.com/",
-            width: 5400,
+            width: 6800,
             height: 706,
             useCORS: true,
-            windowWidth: 5800,
+            windowWidth: 7200,
             windowHeight: 1190,
             scale: 2,
             backgroundColor: '#000000',
@@ -386,6 +386,7 @@ h1 {
   top: 540px;
   margin-bottom: -144px;
   transform: translateX(-1850px);
+  z-index: -1;
 }
 
 .item__info-movie-night {
