@@ -4,7 +4,7 @@ export const letterboxd = {
     namespaced: true,
     state: {
         searchResults: null,
-        usernames: ['aquasine', 'ovengoats'],
+        usernames: [],
         ratings: {},
         cacheMetadata: {},
         isScanning: false,
