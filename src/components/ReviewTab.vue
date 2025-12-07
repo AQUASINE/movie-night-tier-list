@@ -67,6 +67,7 @@
         :movie="selectedEntry"
         :stats="selectedMovieStats"
         :expanded="true"
+        :non-collapsible="true"
       />
     </div>
     <div v-else class="no-selection mb-6">
@@ -125,18 +126,7 @@ const rightSideTiers = computed(() => {
     id: tier.id,
     name: tier.title,
     movies: rightContent.value[tier.id] || []
-  })).concat([
-    {
-      id: 'shadowRealm',
-      name: 'Shadow Realm',
-      movies: rightContent.value.shadowRealm || []
-    },
-    {
-      id: 'chips',
-      name: 'Chips',
-      movies: rightContent.value.chips || []
-    }
-  ]);
+  }))
 });
 
 const lastScanText = computed(() => {
@@ -468,7 +458,7 @@ button:disabled {
 }
 
 .tier-section {
-  margin-bottom: 24px;
+  margin-bottom: 1rem;
 }
 
 .tier-header {
@@ -477,7 +467,7 @@ button:disabled {
   margin-bottom: 12px;
   padding: 8px 12px;
   padding-bottom: 8px;
-  border-bottom: 2px solid var(--bg4);
+  border-bottom: 1px solid var(--bg4);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   cursor: pointer;
@@ -485,7 +475,6 @@ button:disabled {
   align-items: center;
   gap: 8px;
   transition: background-color 0.2s;
-  border-radius: 4px;
 }
 
 .tier-header:hover {

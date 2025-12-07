@@ -93,7 +93,12 @@ export const store = createStore({
             return movies;
         },
         getMovieReviewData: (state, getters) => (movie) => {
+            // Return cached stats if available
+            if (state.letterboxd.movieStatsCache[movie.id]) {
+                return state.letterboxd.movieStatsCache[movie.id];
+            }
             
+            // Fallback to computing on-demand if not cached (shouldn't normally happen)
             const ratingsData = state.letterboxd.ratings;
             const matchedRatings = matchMovieToRatings(movie, ratingsData);
             const basicStats = calculateBasicStats(matchedRatings);
@@ -203,6 +208,7 @@ export const store = createStore({
             commit('addEntry', {film, tier, isLeft})
 
             await this.dispatch('saveToLocalStorage');
+            await this.dispatch('recomputeAllStats');
         },
         async removeEntryFromTier({commit}, payload) {
             const {tierId, tierSide, entry} = payload;
@@ -213,6 +219,7 @@ export const store = createStore({
             commit('setTierContent', {tierId, tierSide, content: tier});
 
             await this.dispatch('saveToLocalStorage');
+            await this.dispatch('recomputeAllStats');
         },
         async moveEntry({commit}, payload) {
             // payload contains movie, sourceTierId, sourceTierSide, targetTierId, targetTierSide
@@ -297,7 +304,7 @@ export const store = createStore({
             const exportData = await this.dispatch('exportTierList');
             localStorage.setItem('tierlist', JSON.stringify(exportData));
         },
-        async loadFromLocalStorage({commit}) {
+        async loadFromLocalStorage({commit, dispatch}) {
             const data = localStorage.getItem('tierlist');
             if (data === null) {
                 console.log("No data in localStorage");
@@ -308,6 +315,9 @@ export const store = createStore({
             localStorage.setItem('tierlist', JSON.stringify(parsedData));
 
             commit('setTierList', parsedData);
+            
+            // Recompute stats after loading tier list
+            await this.dispatch('recomputeAllStats');
         },
         async importTierList({commit}, data) {
             console.log("Importing tier list", data);
@@ -385,6 +395,9 @@ export const store = createStore({
                 if (parsedData.letterboxd.cacheMetadata) {
                     commit('letterboxd/setCacheMetadata', parsedData.letterboxd.cacheMetadata, { root: true });
                 }
+                
+                // Recompute stats after loading ratings
+                await this.dispatch('recomputeAllStats');
             }
         },
         async setShowCloudggren({commit}, showCloudggren) {
@@ -410,7 +423,7 @@ export const store = createStore({
             commit('setDisableDeleteWarning', disableDeleteWarning);
             await this.dispatch('saveMetadataToLocalStorage');
         },
-        async updateEntry({commit}, payload) {
+        async updateEntry({commit, dispatch}, payload) {
             const entry = payload;
 
             const {tierId, tierSide} = this.getters.findEntryTier(entry.id);
@@ -421,7 +434,37 @@ export const store = createStore({
             commit('setTierContent', {tierId, tierSide, content: tier});
 
             await this.dispatch('saveToLocalStorage');
+            await dispatch('recomputeAllStats');
         },
+        async recomputeAllStats({commit, getters, state}) {
+            console.log('Recomputing all movie stats...');
+            const startTime = performance.now();
+            
+            const allMovies = getters.getAllTierListMovies;
+            const ratingsData = state.letterboxd.ratings;
+            const statsCache = {};
+            
+            // First, compute normalized scores once for all movies
+            const normalizedScores = calculateZScoreNormalized(allMovies, ratingsData);
+            
+            // Then compute stats for each movie
+            for (const movie of allMovies) {
+                const matchedRatings = matchMovieToRatings(movie, ratingsData);
+                const basicStats = calculateBasicStats(matchedRatings);
+                const normalizedAverage = normalizedScores[movie.id] || null;
+                
+                statsCache[movie.id] = {
+                    matchedRatings,
+                    basicStats,
+                    normalizedAverage
+                };
+            }
+            
+            commit('letterboxd/setMovieStatsCache', statsCache, { root: true });
+            
+            const endTime = performance.now();
+            console.log(`Stats computed for ${allMovies.length} movies in ${(endTime - startTime).toFixed(2)}ms`);
+        }
     }
 });
 

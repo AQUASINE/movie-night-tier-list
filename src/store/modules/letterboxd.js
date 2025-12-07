@@ -7,7 +7,8 @@ export const letterboxd = {
         usernames: ['aquasine', 'ovengoats'],
         ratings: {},
         cacheMetadata: {},
-        isScanning: false
+        isScanning: false,
+        movieStatsCache: {} // Precomputed stats for all movies
     },
     mutations: {
         setSearchResults(state, results) {
@@ -24,6 +25,9 @@ export const letterboxd = {
         },
         setIsScanning(state, isScanning) {
             state.isScanning = isScanning;
+        },
+        setMovieStatsCache(state, cache) {
+            state.movieStatsCache = cache;
         }
     },
     actions: {
@@ -34,7 +38,7 @@ export const letterboxd = {
             console.log(data);
             commit('setSearchResults', data.items);
         },
-        async refreshRatings({commit, state, dispatch}) {
+        async refreshRatings({commit, state, dispatch, rootGetters}) {
             const response = await fetch(`${BASE_URL}/api/ratings/multiple?usernames=${state.usernames.join(',')}`);
             const data = await response.json();
             if (!data) {
@@ -55,6 +59,9 @@ export const letterboxd = {
                 }
             }
             commit('setCacheMetadata', metadata);
+            
+            // Precompute stats for all movies
+            await dispatch('recomputeAllStats', null, { root: true });
             
             await dispatch('saveMetadataToLocalStorage', null, { root: true });
         },
@@ -97,6 +104,9 @@ export const letterboxd = {
                     }
                 }
                 commit('setCacheMetadata', metadata);
+                
+                // Precompute stats for all movies
+                await dispatch('recomputeAllStats', null, { root: true });
                 
                 await dispatch('saveMetadataToLocalStorage', null, { root: true });
             } finally {

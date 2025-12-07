@@ -54,11 +54,9 @@ export default {
           <img :src="entry.imageUrl" class="uploaded-image" alt="" v-if="entry.imageUrl"/>
         </div>
         <div class="flex-1">
-          <label for="image-upload" class="cursor-pointer">Enter image url</label>
           <input type="text" placeholder="Image URL" class="w-full border-bg4 pa-2 mt-2"
                  v-model="entry.imageUrl"/>
-          <label class="cursor-pointer mt-3 block">Letterboxd Slug (optional)</label>
-          <input type="text" placeholder="e.g. five-nights-at-freddys-2" class="w-full border-bg4 pa-2 mt-2"
+          <input type="text" placeholder="Slug (i.e. what-about-bob)" class="w-full border-bg4 pa-2 mt-2"
                  v-model="entry.slug"/>
         </div>
       </div>

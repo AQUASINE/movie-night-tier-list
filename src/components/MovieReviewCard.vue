@@ -1,37 +1,37 @@
 <template>
-  <div class="movie-review-card" :class="{ expanded: expanded }">
-    <div class="card-header" @click="toggleExpanded">
+  <div class="movie-review-card" :class="{ expanded: expanded, 'non-collapsible': nonCollapsible }" @click="!nonCollapsible && toggleExpanded()">
+    <div class="card-header">
       <div class="card-main">
         <img v-if="movie.imageUrl" :src="movie.imageUrl" class="poster-thumbnail" :alt="movie.name" />
         <div class="card-info">
           <div class="movie-title">{{ movie.name }}</div>
           <div class="ratings-summary">
             <span class="primary-rating">{{ formattedAverage }}</span>
-            <span class="adjusted-rating">Adj: {{ formattedAdjusted }}</span>
+            <div class="inline-chart" v-if="stats.count > 0">
+              <svg class="bar-chart" viewBox="0 0 200 50" preserveAspectRatio="none">
+                <g v-for="(percentage, index) in stats.distribution" :key="index">
+                  <rect
+                    :x="index * 20"
+                    :y="50 - (percentage * 0.5)"
+                    width="18"
+                    :height="percentage * 0.5"
+                    :fill="getBarColor(index)"
+                    :stroke="getBarColor(index)"
+                    rx="3"
+                    ry="3"
+                    stroke-width="0.5"
+                  >
+                    <title>{{ getTooltipText(index) }}</title>
+                  </rect>
+                </g>
+              </svg>
+            </div>
           </div>
         </div>
       </div>
-      <div class="expand-icon">
+      <div class="expand-icon" v-if="!nonCollapsible">
         <v-icon :icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"></v-icon>
       </div>
-    </div>
-    
-    <div class="chart-container" v-if="stats.count > 0">
-      <svg class="bar-chart" viewBox="0 0 200 50" preserveAspectRatio="none">
-        <g v-for="(percentage, index) in stats.distribution" :key="index">
-          <rect
-            :x="index * 20"
-            :y="50 - (percentage * 0.5)"
-            width="18"
-            :height="percentage * 0.5"
-            fill="rgba(99, 102, 241, 0.8)"
-            stroke="rgba(99, 102, 241, 1)"
-            stroke-width="0.5"
-          >
-            <title>{{ getTooltipText(index) }}</title>
-          </rect>
-        </g>
-      </svg>
     </div>
     
     <div class="warning-banner" v-if="stats.count === 0">
@@ -39,10 +39,24 @@
       No ratings matched. Add slug in Edit Entry tab to link ratings.
     </div>
     
-    <div class="ratings-list" v-if="expanded && stats.count > 0">
+    <div class="ratings-list" v-if="expanded && stats.count > 0" :class="{ 'has-scroll': sortedRatings.length > 8 }">
       <div class="rating-item" v-for="rating in sortedRatings" :key="rating.username">
         <span class="username">{{ rating.username }}</span>
-        <span class="stars">{{ '★'.repeat(rating.rating) }}</span>
+        <span class="stars" :style="{ color: getBarColor(rating.rating - 1) }">
+          <v-icon 
+            v-for="n in getFullStars(rating.rating)" 
+            :key="'full-' + n" 
+            icon="mdi-star" 
+            :color="getBarColor(rating.rating - 1)"
+            size="18"
+          ></v-icon>
+          <v-icon 
+            v-if="hasHalfStar(rating.rating)" 
+            icon="mdi-star-half" 
+            :color="getBarColor(rating.rating - 1)"
+            size="18"
+          ></v-icon>
+        </span>
         <span class="rating-value">{{ rating.rating }}/10</span>
       </div>
     </div>
@@ -64,6 +78,10 @@ export default {
     expanded: {
       type: Boolean,
       default: false
+    },
+    nonCollapsible: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -71,13 +89,7 @@ export default {
       if (this.stats.average === null || this.stats.count === 0) {
         return '--';
       }
-      return `${this.stats.average.toFixed(1)}★ (${this.stats.count})`;
-    },
-    formattedAdjusted() {
-      if (this.stats.normalizedAverage === null || this.stats.normalizedAverage === undefined) {
-        return '--';
-      }
-      return `${this.stats.normalizedAverage.toFixed(1)}★`;
+      return `${this.stats.average.toFixed(1)}/10★ (${this.stats.count})`;
     },
     sortedRatings() {
       if (!this.stats.matchedRatings) return [];
@@ -92,6 +104,39 @@ export default {
       const count = this.stats.distributionCounts ? this.stats.distributionCounts[index] : 0;
       const rating = index + 1;
       return count === 1 ? `${count} rating (${rating}★)` : `${count} ratings (${rating}★)`;
+    },
+    getBarColor(index) {
+        switch (index) {
+            // 1 out of 10: red
+          case 0: return '#ff1452';
+            // 2 out of 10: red-orange  
+          case 1: return '#f9514c';
+            // 3 out of 10: orange
+            case 2: return '#f96316';
+            // 4 out of 10: yellow-orange
+          case 3: return '#ffb400';
+            // 5 out of 10: yellow
+            case 4: return '#ffdd00';
+            // 6 out of 10: yellow-green
+            case 5: return '#b6f000';
+            // 7 out of 10: light green
+            case 6: return '#66d900';
+            // 8 out of 10: green
+            case 7: return '#28b775';
+            // 9 out of 10: blue-green
+            case 8: return '#00a6fd';
+            // 10 out of 10: blue
+            case 9: return '#0072ff';
+        }
+    },
+    getFullStars(rating) {
+      // Convert 10-point scale to 5-star display
+      const stars = rating / 2;
+      return Math.floor(stars);
+    },
+    hasHalfStar(rating) {
+      const stars = rating / 2;
+      return stars % 1 >= 0.5;
     }
   }
 };
@@ -110,6 +155,22 @@ export default {
 
 .movie-review-card:hover {
   background-color: #2a2a2a;
+}
+
+.movie-review-card.non-collapsible {
+  cursor: default;
+  border: none;
+  padding: 0;
+  background-color: transparent;
+}
+
+.movie-review-card.non-collapsible:hover {
+  background-color: transparent;
+}
+
+.movie-review-card.non-collapsible .card-header {
+  cursor: default;
+  padding: 0;
 }
 
 .card-header {
@@ -157,27 +218,28 @@ export default {
 .primary-rating {
   color: #ffffff;
   font-weight: 500;
+  white-space: nowrap;
 }
 
-.adjusted-rating {
-  color: #888888;
-  font-size: 12px;
-}
-
-.expand-icon {
-  color: var(--bg4);
+.inline-chart {
+  width: 120px;
+  height: 30px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  margin-top: 0.25rem;
+  padding: 2px;
   flex-shrink: 0;
-}
-
-.chart-container {
-  height: 50px;
-  margin-top: 12px;
-  margin-bottom: 8px;
+  margin-left: 0.25rem;
 }
 
 .bar-chart {
   width: 100%;
   height: 100%;
+}
+
+.expand-icon {
+  color: var(--bg4);
+  flex-shrink: 0;
 }
 
 .warning-banner {
@@ -201,32 +263,49 @@ export default {
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--bg4);
-  max-height: 300px;
+  position: relative;
+}
+
+.ratings-list.has-scroll {
+  max-height: 250px;
   overflow-y: auto;
+  padding-right: 1rem;
 }
 
 .rating-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 0;
-  font-size: 13px;
+  gap: 12px;
+  font-size: 14px;
 }
 
 .username {
   font-weight: 500;
-  min-width: 80px;
+  min-width: 100px;
 }
 
 .stars {
-  color: #fbbf24;
-  font-size: 12px;
-  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .rating-value {
   color: #888888;
-  font-size: 12px;
+  font-size: 13px;
   margin-left: auto;
+}
+
+.scroll-indicator {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to bottom, transparent, var(--bg3) 50%);
+  text-align: center;
+  padding: 12px 0 4px;
+  font-size: 11px;
+  color: #888888;
+  pointer-events: none;
 }
 </style>
