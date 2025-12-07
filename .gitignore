@@ -13,6 +13,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 src/server/images/
+src/server/ratings-db.json
 
 # Editor directories and files
 .idea

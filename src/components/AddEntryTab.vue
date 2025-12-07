@@ -17,7 +17,7 @@
     </div>
     <div class="mt-4">
       <input type="text" placeholder="Title" class="w-full border-bg4 pa-2 mt-2" v-model="selectedInfo.name"/>
-      <div class="opacity-30">Letterboxd ID: {{ selectedInfo.letterboxdId }}</div>
+      <div class="opacity-30">Poster ID: {{ selectedInfo.letterboxdId }}</div>
       <div class="flex mt-4">
         <div class="uploaded-image-wrap mr-3">
           <img :src="selectedInfo.imageUrl" class="uploaded-image" alt="" v-if="selectedInfo.imageUrl"/>
