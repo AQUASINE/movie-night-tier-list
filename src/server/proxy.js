@@ -210,14 +210,33 @@ const getSavedRatings = (username) => {
 const getSavedRatingsMultiple = (usernames) => {
     const result = {};
     for (const username of usernames) {
-        result[username] = getSavedRatings(username);
+        if (ratingsDb[username]) {
+            const userData = ratingsDb[username];
+            // Build posterIdIndex for quick LID -> filmId lookups
+            const posterIdIndex = {};
+            for (const filmId in userData.ratings) {
+                const rating = userData.ratings[filmId];
+                if (rating.posterId) {
+                    posterIdIndex[rating.posterId] = filmId;
+                }
+            }
+            result[username] = {
+                ratings: userData.ratings,
+                posterIdIndex: posterIdIndex,
+                lastScan: userData.lastScan,
+                lastUpdated: userData.lastUpdated
+            };
+        } else {
+            result[username] = {
+                ratings: {},
+                posterIdIndex: {},
+                lastScan: null,
+                lastUpdated: null
+            };
+        }
     }
     return result;
 }
-
-scanMultipleUsers(['aquasine', 'ovengoats']).then(() => {
-    console.log('Finished scanning all users');
-});
 
 app.use(cors());
 app.use(express.json());
@@ -296,8 +315,36 @@ app.get('/api/ratings/multiple', (req, res) => {
     res.json(getSavedRatingsMultiple(usernames));
 });
 
+app.post('/api/users/register', (req, res) => {
+    console.log('POST /api/users/register');
+    const usernames = req.body.usernames || [];
+    if (!Array.isArray(usernames) || usernames.length === 0) {
+        res.status(400).send('Bad Request: usernames array required');
+        return;
+    }
+    
+    let added = [];
+    for (const username of usernames) {
+        if (!ratingsDb[username]) {
+            ratingsDb[username] = {
+                ratings: {},
+                lastScan: null,
+                lastUpdated: null
+            };
+            added.push(username);
+        }
+    }
+    
+    if (added.length > 0) {
+        saveRatingsDb();
+        console.log(`Registered new users: ${added.join(', ')}`);
+    }
+    
+    res.json({ success: true, added: added });
+});
+
 app.post('/api/scan/multiple', async (req, res) => {
-    console.log('GET /api/scan/multiple')
+    console.log('POST /api/scan/multiple');
     const usernames = req.body.usernames ? req.body.usernames.split(',') : [];
     if (usernames.length === 0) {
         res.status(400).send('Bad Request: No usernames provided');

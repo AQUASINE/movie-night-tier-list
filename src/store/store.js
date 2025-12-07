@@ -1,5 +1,6 @@
 import {createStore} from "vuex";
 import {letterboxd} from "@/store/modules/letterboxd";
+import {matchMovieToRatings, calculateBasicStats, calculateZScoreNormalized} from "@/utils/reviewStats";
 
 export const store = createStore({
     state: {
@@ -72,6 +73,41 @@ export const store = createStore({
                 return {tierId: "dock", tierSide: "dock"};
             }
             throw new Error("Could not find entry");
+        },
+        getAllTierListMovies: (state) => {
+            const movies = [];
+            
+            // Collect from left content
+            for (const tierId in state.leftContent) {
+                movies.push(...state.leftContent[tierId]);
+            }
+            
+            // Collect from right content
+            for (const tierId in state.rightContent) {
+                movies.push(...state.rightContent[tierId]);
+            }
+            
+            // Collect from dock
+            movies.push(...state.dock);
+            
+            return movies;
+        },
+        getMovieReviewData: (state, getters) => (movie) => {
+            
+            const ratingsData = state.letterboxd.ratings;
+            const matchedRatings = matchMovieToRatings(movie, ratingsData);
+            const basicStats = calculateBasicStats(matchedRatings);
+            
+            // Calculate normalized score
+            const allMovies = getters.getAllTierListMovies;
+            const normalizedScores = calculateZScoreNormalized(allMovies, ratingsData);
+            const normalizedAverage = normalizedScores[movie.id] || null;
+            
+            return {
+                matchedRatings,
+                basicStats,
+                normalizedAverage
+            };
         }
     },
     mutations: {
@@ -315,7 +351,12 @@ export const store = createStore({
                 showAutotainment: this.state.showAutotainment,
                 disableDeleteWarning: this.state.disableDeleteWarning,
                 showCloudggren: this.state.showCloudggren,
-                showDream: this.state.showDream
+                showDream: this.state.showDream,
+                letterboxd: {
+                    usernames: this.state.letterboxd.usernames,
+                    ratings: this.state.letterboxd.ratings,
+                    cacheMetadata: this.state.letterboxd.cacheMetadata
+                }
             }
             localStorage.setItem('metadata', JSON.stringify(metadata));
         },
@@ -333,6 +374,18 @@ export const store = createStore({
             commit('setDisableDeleteWarning', parsedData.disableDeleteWarning);
             commit('setShowCloudggren', parsedData.showCloudggren);
             commit('setShowDream', parsedData.showDream);
+            
+            if (parsedData.letterboxd) {
+                if (parsedData.letterboxd.usernames) {
+                    commit('letterboxd/setUsernames', parsedData.letterboxd.usernames, { root: true });
+                }
+                if (parsedData.letterboxd.ratings) {
+                    commit('letterboxd/setRatings', parsedData.letterboxd.ratings, { root: true });
+                }
+                if (parsedData.letterboxd.cacheMetadata) {
+                    commit('letterboxd/setCacheMetadata', parsedData.letterboxd.cacheMetadata, { root: true });
+                }
+            }
         },
         async setShowCloudggren({commit}, showCloudggren) {
             commit('setShowCloudggren', showCloudggren);
